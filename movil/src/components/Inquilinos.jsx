@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { clienteSupabase } from "../config/supabase";
-import { PlusCircle, Users, X, Phone, Building, Car, Trash2, Edit, AlertCircle, FileText, Upload } from "lucide-react";
+import { 
+  PlusCircle, Users, X, Phone, Building, Car, Trash2, Edit, 
+  AlertCircle, FileText, Upload, Calendar, AlertTriangle, Download 
+} from "lucide-react";
 
 export default function Inquilinos({ sesion }) {
   const adminId = sesion?.user?.id;
@@ -24,10 +27,130 @@ export default function Inquilinos({ sesion }) {
   // Documentos en Base64
   const [dniBase64, setDniBase64] = useState("");
   const [contratoBase64, setContratoBase64] = useState("");
+  
+  // Historial de documentos cargados
+  const [historialDocs, setHistorialDocs] = useState([]);
+
+  // Estados de control de modales de confirmación y preview
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [pendingUpload, setPendingUpload] = useState(null); // { file, tipo, input }
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [previewDoc, setPreviewDoc] = useState(null); // { nombre, url, fecha, tipo }
 
   // Estados de control
   const [errorAccion, setErrorAccion] = useState("");
   const [guardando, setGuardando] = useState(false);
+
+  // Requerimientos de formato y carga de documentos
+  const ALLOWED_EXTENSIONS = ["docx", "doc", "pdf", "png", "jpg", "jpj", "jpeg"];
+
+  const validarArchivo = (file) => {
+    if (!file) return false;
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (!ALLOWED_EXTENSIONS.includes(ext)) {
+      alert(`Formato de archivo no permitido.\nSolo se aceptan: .docx, .doc, .pdf, .png, .jpg, .jpj, .jpeg`);
+      return false;
+    }
+    return true;
+  };
+
+  const procesarCarga = (file, tipo, inputElement) => {
+    const lector = new FileReader();
+    lector.onloadend = () => {
+      const timestamp = new Date().toISOString();
+      const newRecord = {
+        id: `doc-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
+        tipo: tipo,
+        nombre: file.name,
+        url: lector.result,
+        fecha: timestamp
+      };
+
+      if (tipo === "dni") {
+        setDniBase64(lector.result);
+      } else {
+        setContratoBase64(lector.result);
+      }
+
+      setHistorialDocs(prev => [...prev, newRecord]);
+      alert(`Archivo ${tipo.toUpperCase()} cargado temporalmente. Se guardará al registrar/actualizar el inquilino.`);
+      if (inputElement) inputElement.value = "";
+    };
+    lector.readAsDataURL(file);
+  };
+
+  const manejarSeleccionArchivo = (e, tipo) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!validarArchivo(file)) {
+      e.target.value = "";
+      return;
+    }
+
+    const tieneExistente = tipo === "dni" ? !!dniBase64 : !!contratoBase64;
+    if (tieneExistente) {
+      setPendingUpload({ file, tipo, input: e.target });
+      setShowConfirmModal(true);
+    } else {
+      procesarCarga(file, tipo, e.target);
+    }
+  };
+
+  const handleConfirmUpload = () => {
+    if (pendingUpload) {
+      procesarCarga(pendingUpload.file, pendingUpload.tipo, pendingUpload.input);
+    }
+    setShowConfirmModal(false);
+  };
+
+  const handleCancelUpload = () => {
+    if (pendingUpload && pendingUpload.input) {
+      pendingUpload.input.value = "";
+    }
+    setPendingUpload(null);
+    setShowConfirmModal(false);
+  };
+
+  const eliminarDelHistorial = (docId, tipo) => {
+    if (window.confirm("¿Estás seguro de eliminar este documento del historial?")) {
+      const nuevoHistorial = historialDocs.filter(d => d.id !== docId);
+      setHistorialDocs(nuevoHistorial);
+
+      let activoUrl = tipo === "dni" ? dniBase64 : contratoBase64;
+      const deletedDoc = historialDocs.find(d => d.id === docId);
+
+      if (deletedDoc && activoUrl === deletedDoc.url) {
+        const restantes = nuevoHistorial.filter(d => d.tipo === tipo);
+        if (restantes.length > 0) {
+          activoUrl = restantes[restantes.length - 1].url;
+        } else {
+          activoUrl = "";
+        }
+      }
+
+      if (tipo === "dni") {
+        setDniBase64(activoUrl);
+      } else {
+        setContratoBase64(activoUrl);
+      }
+    }
+  };
+
+  const getFileCategory = (fileName, url) => {
+    if (!fileName) return "unknown";
+    const ext = fileName.split('.').pop().toLowerCase();
+    if (["png", "jpg", "jpeg", "jpj"].includes(ext) || url?.startsWith("data:image/")) {
+      return "image";
+    }
+    if (ext === "pdf" || url?.startsWith("data:application/pdf")) {
+      return "pdf";
+    }
+    if (["doc", "docx"].includes(ext)) {
+      return "word";
+    }
+    return "other";
+  };
 
   const cargarDatos = async () => {
     if (!adminId) return;
@@ -126,6 +249,7 @@ export default function Inquilinos({ sesion }) {
       const docs = inq.documentos || {};
       setDniBase64(docs.dni_url || "");
       setContratoBase64(docs.contrato_url || "");
+      setHistorialDocs(docs.historial || []);
     } else {
       setInqAEditar(null);
       setNombre("");
@@ -138,27 +262,12 @@ export default function Inquilinos({ sesion }) {
       setCocheraMonto("");
       setDniBase64("");
       setContratoBase64("");
+      setHistorialDocs([]);
     }
     setMostrarModal(true);
   };
 
-  const manejarDniUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const lector = new FileReader();
-      lector.onloadend = () => setDniBase64(lector.result);
-      lector.readAsDataURL(file);
-    }
-  };
-
-  const manejarContratoUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const lector = new FileReader();
-      lector.onloadend = () => setContratoBase64(lector.result);
-      lector.readAsDataURL(file);
-    }
-  };
+  // Lógica de carga delegada al manejador común unificado
 
   const guardarInquilino = async (e) => {
     e.preventDefault();
@@ -183,7 +292,8 @@ export default function Inquilinos({ sesion }) {
       },
       documentos: {
         dni_url: dniBase64,
-        contrato_url: contratoBase64
+        contrato_url: contratoBase64,
+        historial: historialDocs
       }
     };
 
@@ -335,21 +445,47 @@ export default function Inquilinos({ sesion }) {
                     </div>
                   )}
 
-                  {/* Documentos */}
-                  {(inq.documentos?.dni_url || inq.documentos?.contrato_url) && (
-                    <div className="flex gap-2 pt-1">
-                      {inq.documentos.dni_url && (
-                        <a href={inq.documentos.dni_url} download={`DNI_${inq.nombre}.png`} className="text-xs font-black text-blue-600 underline flex items-center gap-1">
-                          <FileText className="h-3 w-3" /> Ver DNI
-                        </a>
-                      )}
-                      {inq.documentos.contrato_url && (
-                        <a href={inq.documentos.contrato_url} download={`Contrato_${inq.nombre}.png`} className="text-xs font-black text-blue-600 underline flex items-center gap-1 ml-2">
-                          <FileText className="h-3 w-3" /> Ver Contrato
-                        </a>
-                      )}
-                    </div>
-                  )}
+                  {/* Documentos Activos e Historial */}
+                  <div className="space-y-2 pt-1.5 border-t border-slate-100">
+                    {(inq.documentos?.dni_url || inq.documentos?.contrato_url) && (
+                      <div className="flex flex-wrap gap-2">
+                        {inq.documentos.dni_url && (
+                          <a href={inq.documentos.dni_url} download={`DNI_${inq.nombre}.png`} className="text-xs font-black text-blue-600 underline flex items-center gap-1">
+                            <FileText className="h-3 w-3" /> Ver DNI Activo
+                          </a>
+                        )}
+                        {inq.documentos.contrato_url && (
+                          <a href={inq.documentos.contrato_url} download={`Contrato_${inq.nombre}.png`} className="text-xs font-black text-blue-600 underline flex items-center gap-1">
+                            <FileText className="h-3 w-3" /> Ver Contrato Activo
+                          </a>
+                        )}
+                      </div>
+                    )}
+                    
+                    {/* Botones rápidos del historial del Inquilino */}
+                    {inq.documentos?.historial?.length > 0 && (
+                      <div className="space-y-1">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-wide block">Historial de Archivos ({inq.documentos.historial.length})</span>
+                        <div className="flex flex-wrap gap-1">
+                          {inq.documentos.historial.map(doc => (
+                            <button
+                              key={doc.id}
+                              type="button"
+                              onClick={() => {
+                                setPreviewDoc(doc);
+                                setShowPreviewModal(true);
+                              }}
+                              className="inline-flex items-center gap-1 bg-slate-50 hover:bg-slate-100 border border-slate-200 px-2 py-0.5 rounded text-[10px] font-bold text-slate-600 transition-colors"
+                              title={`Subido el ${new Date(doc.fecha).toLocaleString("es-ES")}`}
+                            >
+                              <FileText className="h-2.5 w-2.5 text-slate-400" />
+                              <span className="max-w-[80px] truncate">{doc.nombre}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
 
                 </div>
 
@@ -505,54 +641,215 @@ export default function Inquilinos({ sesion }) {
 
               {/* Documentos */}
               <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-4">
-                <span className="text-xs font-black uppercase text-slate-400 block">Adjuntar Documentos (DNI / Contrato)</span>
+                <span className="text-xs font-black uppercase text-slate-400 block">Adjuntar Documentos</span>
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-xs font-bold text-slate-500 block mb-1">Cargar DNI</label>
                     <div className="relative border border-dashed border-slate-300 rounded-lg p-2.5 flex items-center justify-center bg-white hover:border-blue-500 cursor-pointer">
-                      <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" accept="image/*" onChange={manejarDniUpload} />
+                      <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" accept=".docx,.doc,.pdf,.png,.jpg,.jpj,.jpeg" onChange={(e) => manejarSeleccionArchivo(e, "dni")} />
                       <div className="text-center">
                         <Upload className="h-5 w-5 text-slate-400 mx-auto" />
                         <span className="text-[10px] font-extrabold text-slate-600 block mt-1">DNI</span>
                       </div>
                     </div>
-                    {dniBase64 && <span className="text-[10px] text-green-600 font-bold block mt-1">✓ DNI Cargado</span>}
+                    {dniBase64 && <span className="text-[10px] text-green-600 font-bold block mt-1">✓ DNI Listo</span>}
                   </div>
 
                   <div>
                     <label className="text-xs font-bold text-slate-500 block mb-1">Cargar Contrato</label>
                     <div className="relative border border-dashed border-slate-300 rounded-lg p-2.5 flex items-center justify-center bg-white hover:border-blue-500 cursor-pointer">
-                      <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" accept="image/*" onChange={manejarContratoUpload} />
+                      <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" accept=".docx,.doc,.pdf,.png,.jpg,.jpj,.jpeg" onChange={(e) => manejarSeleccionArchivo(e, "contrato")} />
                       <div className="text-center">
                         <Upload className="h-5 w-5 text-slate-400 mx-auto" />
                         <span className="text-[10px] font-extrabold text-slate-600 block mt-1">Contrato</span>
                       </div>
                     </div>
-                    {contratoBase64 && <span className="text-[10px] text-green-600 font-bold block mt-1">✓ Contrato Cargado</span>}
+                    {contratoBase64 && <span className="text-[10px] text-green-600 font-bold block mt-1">✓ Contrato Listo</span>}
                   </div>
                 </div>
               </div>
 
-              {/* Botones de Acción */}
-              <div className="flex gap-3 pt-4 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setMostrarModal(false)}
-                  className="flex-1/2 boton-secundario-gigante text-base"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={guardando}
-                  className="flex-1 boton-positivo-gigante text-base font-black"
-                >
-                  {guardando ? "Registrando..." : "Registrar"}
-                </button>
-              </div>
+              {/* Historial en el Modal de Edición */}
+              {historialDocs.length > 0 && (
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+                  <span className="text-xs font-black uppercase text-slate-400 block">Historial del Inquilino ({historialDocs.length})</span>
+                  <div className="space-y-2 max-h-[150px] overflow-y-auto">
+                    {historialDocs.map(doc => (
+                      <div key={doc.id} className="flex items-center justify-between bg-white p-2 rounded border border-slate-200 text-xs">
+                        <div className="truncate flex-1 pr-2">
+                          <span className="font-bold text-slate-800 block truncate">{doc.nombre}</span>
+                          <span className="text-[9px] text-slate-400 block">{new Date(doc.fecha).toLocaleString("es-ES")}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase ${doc.tipo === "dni" ? "bg-blue-100 text-blue-800" : "bg-emerald-100 text-emerald-800"}`}>{doc.tipo}</span>
+                          <button type="button" onClick={() => { setPreviewDoc(doc); setShowPreviewModal(true); }} className="p-1 bg-slate-100 text-slate-600 rounded hover:bg-slate-200"><Eye className="h-3.5 w-3.5" /></button>
+                          <button type="button" onClick={() => eliminarDelHistorial(doc.id, doc.tipo)} className="p-1 bg-red-50 text-red-600 rounded hover:bg-red-100"><Trash2 className="h-3.5 w-3.5" /></button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-            </form>
+      )}
+
+      {/* 2. MODAL DE CONFIRMACIÓN DE CARGA */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-100 page-enter p-6 space-y-4 text-sm font-semibold">
+            <div className="flex items-center gap-3 text-amber-500">
+              <div className="h-10 w-10 rounded-full bg-amber-50 flex items-center justify-center border border-amber-100">
+                <AlertTriangle className="h-6 w-6" />
+              </div>
+              <h5 className="font-extrabold text-slate-800 text-base">Archivo Existente</h5>
+            </div>
+            <p className="text-sm font-semibold text-slate-600 leading-relaxed">
+              ¿Estás seguro de adjuntar un nuevo documento? Esto registrará la nueva versión en el historial de forma permanente.
+            </p>
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={handleCancelUpload}
+                className="flex-1 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded text-xs font-bold transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmUpload}
+                className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-bold transition-colors"
+              >
+                Sí, adjuntar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 4. MODAL DE PREVISUALIZACIÓN */}
+      {showPreviewModal && previewDoc && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/70 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[85vh] overflow-hidden border border-slate-100 page-enter flex flex-col font-bold">
+            {/* Cabecera del modal */}
+            <div className="bg-slate-900 text-white p-4 flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className={`inline-block px-2 py-0.5 rounded text-[9px] font-black uppercase ${
+                    previewDoc.tipo === "dni" ? "bg-blue-500 text-white" : "bg-emerald-500 text-white"
+                  }`}>
+                    {previewDoc.tipo}
+                  </span>
+                  <h4 className="font-extrabold text-sm tracking-wide truncate max-w-[200px] sm:max-w-md">
+                    {previewDoc.nombre}
+                  </h4>
+                </div>
+                <p className="text-[10px] text-slate-400 font-bold mt-1">
+                  Subido el: {new Date(previewDoc.fecha).toLocaleString("es-ES")}
+                </p>
+              </div>
+              <button 
+                type="button"
+                onClick={() => {
+                  setShowPreviewModal(false);
+                  setPreviewDoc(null);
+                }}
+                className="p-1 rounded text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Contenedor de visualización */}
+            <div className="p-6 bg-slate-100 flex-1 overflow-y-auto flex flex-col items-center justify-center min-h-[40vh] max-h-[60vh]">
+              {getFileCategory(previewDoc.nombre, previewDoc.url) === "image" && (
+                <img 
+                  src={previewDoc.url} 
+                  alt={previewDoc.nombre}
+                  className="max-w-full max-h-[55vh] object-contain rounded-md shadow-sm border border-slate-200"
+                />
+              )}
+
+              {getFileCategory(previewDoc.nombre, previewDoc.url) === "pdf" && (
+                <div className="text-center p-8 bg-white border border-slate-200 rounded-lg shadow-sm max-w-md space-y-4">
+                  <div className="h-16 w-16 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto border border-red-100 shadow-sm">
+                    <FileText className="h-8 w-8" />
+                  </div>
+                  <div>
+                    <h5 className="font-extrabold text-slate-800 text-sm">Documento PDF Listo</h5>
+                    <p className="text-xs font-semibold text-slate-400 mt-2 leading-relaxed">
+                      El archivo PDF se ha cargado correctamente y está listo para su visualización. Por motivos de compatibilidad de seguridad en tu navegador, haz clic abajo para abrir o descargar el documento de forma segura.
+                    </p>
+                  </div>
+                  <a
+                    href={previewDoc.url}
+                    download={previewDoc.nombre}
+                    className="inline-flex items-center gap-2 py-2 px-5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-bold transition-all shadow-md shadow-blue-500/10 hover:shadow-lg text-center"
+                  >
+                    <Download className="h-4 w-4" />
+                    <span>Ver / Descargar PDF</span>
+                  </a>
+                </div>
+              )}
+
+              {getFileCategory(previewDoc.nombre, previewDoc.url) === "word" && (
+                <div className="text-center p-8 bg-white border border-slate-200 rounded-lg shadow-sm max-w-md space-y-4">
+                  <div className="h-16 w-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto border border-blue-100 shadow-sm">
+                    <FileText className="h-8 w-8" />
+                  </div>
+                  <div>
+                    <h5 className="font-extrabold text-slate-800 text-sm">Documento de Word (.doc / .docx)</h5>
+                    <p className="text-xs font-semibold text-slate-400 mt-2 leading-relaxed">
+                      Los archivos de Microsoft Word no pueden previsualizarse directamente en el navegador. Haz clic a continuación para descargar el archivo y revisarlo.
+                    </p>
+                  </div>
+                  <a
+                    href={previewDoc.url}
+                    download={previewDoc.nombre}
+                    className="inline-flex items-center gap-2 py-2 px-5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-bold transition-all shadow-md shadow-blue-500/10 hover:shadow-lg text-center"
+                  >
+                    <Download className="h-4 w-4" />
+                    <span>Descargar Documento</span>
+                  </a>
+                </div>
+              )}
+
+              {getFileCategory(previewDoc.nombre, previewDoc.url) === "other" && (
+                <div className="text-center p-8 bg-white border border-slate-200 rounded-lg shadow-sm max-w-md space-y-4">
+                  <div className="h-16 w-16 bg-slate-50 text-slate-600 rounded-full flex items-center justify-center mx-auto border border-slate-100 shadow-sm">
+                    <FileText className="h-8 w-8" />
+                  </div>
+                  <div>
+                    <h5 className="font-extrabold text-slate-800 text-sm">Archivo no previsualizable</h5>
+                    <p className="text-xs font-semibold text-slate-400 mt-2 leading-relaxed">
+                      Este tipo de archivo no admite la previsualización directa en el navegador. Puedes descargarlo haciendo clic en el botón inferior.
+                    </p>
+                  </div>
+                  <a
+                    href={previewDoc.url}
+                    download={previewDoc.nombre}
+                    className="inline-flex items-center gap-2 py-2 px-5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-bold transition-all shadow-md shadow-blue-500/10 hover:shadow-lg text-center"
+                  >
+                    <Download className="h-4 w-4" />
+                    <span>Descargar Archivo</span>
+                  </a>
+                </div>
+              )}
+            </div>
+
+            {/* Pie del modal */}
+            <div className="bg-slate-50 border-t border-slate-100 p-4 flex justify-end font-bold">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowPreviewModal(false);
+                  setPreviewDoc(null);
+                }}
+                className="py-2 px-5 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 rounded text-xs font-bold transition-colors shadow-sm"
+              >
+                Cerrar
+              </button>
+            </div>
           </div>
         </div>
       )}
