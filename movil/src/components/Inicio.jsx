@@ -58,6 +58,38 @@ export default function Inicio({ sesion }) {
     setCargando(true);
     setErrorGuardado("");
     try {
+      if (adminId === "admin-prueba-id") {
+        // Datos simulados locales interactivos para el Modo Demostración
+        const demoPerfil = {
+          nombre_completo: "Mario Andres Castro Ascencio (Demo)",
+          datos_pago: {
+            yape: "987654321",
+            plin: "987654321",
+            bcp_cuenta: "191-98765432-0-12",
+            bcp_cci: "002-19198765432012-54",
+            interbank_cuenta: "200-300456789",
+            interbank_cci: "003-200300456789-11",
+            tarifa_luz: 1.0,
+            tarifa_agua: 4.0
+          }
+        };
+        setDatosPerfil(demoPerfil);
+
+        const demoInqs = [
+          { id: "inq-1", nombre: "Juan Pérez García", celular: "946131777", depto_id: "prop-1", moto_info: { placa: "ABC-123", monto_asociacion: 50 } },
+          { id: "inq-2", nombre: "María López Rodríguez", celular: "912345678", depto_id: "prop-2", moto_info: { placa: "", monto_asociacion: 0 } }
+        ];
+        setListaInquilinos(demoInqs);
+
+        const demoLects = [
+          { id: "lec-1", inquilino_id: "inq-1", mes: "Mayo 2026", luz: { anterior: 1020, actual: 1080, costo_unitario: 1.0 }, agua: { anterior: 110, actual: 118, costo_unitario: 4.0 }, seguridad: 15, pagado: false },
+          { id: "lec-2", inquilino_id: "inq-2", mes: "Mayo 2026", luz: { anterior: 2040, actual: 2080, costo_unitario: 1.0 }, agua: { anterior: 350, actual: 362, costo_unitario: 4.0 }, seguridad: 15, pagado: true }
+        ];
+        setListaLecturas(demoLects);
+        setCargando(false);
+        return;
+      }
+
       // 1. Cargar Perfil del Propietario (Caja Fuerte)
       const { data: perfil, error: errPerfil } = await clienteSupabase
         .from("perfiles")
