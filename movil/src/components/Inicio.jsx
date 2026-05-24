@@ -15,7 +15,9 @@ import {
   FileText,
   CheckCircle,
   BarChart3,
-  HelpCircle
+  HelpCircle,
+  Droplet,
+  Shield
 } from "lucide-react";
 
 export default function Inicio({ sesion }) {
@@ -27,6 +29,16 @@ export default function Inicio({ sesion }) {
   const [listaLecturas, setListaLecturas] = useState([]);
   const [datosPerfil, setDatosPerfil] = useState(null);
   const [cargando, setCargando] = useState(true);
+  const [mesFiltro, setMesFiltro] = useState("Mayo 2026");
+
+  // Obtener meses únicos de lecturas
+  const mesesDisponibles = Array.from(new Set(listaLecturas.map(l => l.mes)));
+
+  useEffect(() => {
+    if (mesesDisponibles.length > 0 && !mesesDisponibles.includes(mesFiltro)) {
+      setMesFiltro(mesesDisponibles[0]);
+    }
+  }, [listaLecturas]);
 
   // Estados de cálculo y formulario
   const [inquilinoSeleccionado, setInquilinoSeleccionado] = useState("");
@@ -375,18 +387,24 @@ export default function Inicio({ sesion }) {
   // --- CÁLCULOS DEL DASHBOARD DE GASTOS DE SERVICIOS ---
   const calcularGastosServicios = () => {
     let acumuladoLuz = 0;
+    let acumuladoLuzKw = 0;
     let acumuladoAgua = 0;
+    let acumuladoAguaM3 = 0;
     let acumuladoSeguridad = 0;
 
-    listaLecturas.forEach((lec) => {
+    const lecturasFiltradas = listaLecturas.filter(l => l.mes === mesFiltro);
+
+    lecturasFiltradas.forEach((lec) => {
       // Luz
       const luzInfo = lec.luz || {};
       const consumo = Math.max(0, (Number(luzInfo.actual) || 0) - (Number(luzInfo.anterior) || 0));
+      acumuladoLuzKw += consumo;
       acumuladoLuz += consumo * (Number(luzInfo.costo_unitario) || 1.0);
 
       // Agua
       const aguaInfo = lec.agua || {};
       const consAgua = Math.max(0, (Number(aguaInfo.actual) || 0) - (Number(aguaInfo.anterior) || 0));
+      acumuladoAguaM3 += consAgua;
       acumuladoAgua += consAgua * (Number(aguaInfo.costo_unitario) || 4.0);
 
       // Seguridad
@@ -395,9 +413,34 @@ export default function Inicio({ sesion }) {
 
     return {
       luz: acumuladoLuz,
+      luzKw: acumuladoLuzKw,
       agua: acumuladoAgua,
+      aguaM3: acumuladoAguaM3,
       seguridad: acumuladoSeguridad,
       total: acumuladoLuz + acumuladoAgua + acumuladoSeguridad
+    };
+  };
+
+  // Helper para obtener información de inquilino y departamento
+  const obtenerInquilinoInfo = (inqId) => {
+    const inq = listaInquilinos.find(i => i.id === inqId);
+    if (!inq) return { nombre: "Desconocido", depto: "N/A" };
+    
+    let deptoNombre = "N/A";
+    if (adminId.startsWith("demo-") || adminId === "admin-prueba-id") {
+      const demoDeptos = {
+        "prop-mario-1": "Depto 2A", "prop-mario-2": "Depto 2B", "prop-mario-3": "Depto 3A",
+        "prop-sofia-1": "Depto 101", "prop-sofia-2": "Depto 102", "prop-sofia-3": "Depto 201", "prop-sofia-4": "Depto 202",
+        "prop-carlos-1": "Local A", "prop-carlos-2": "Local B", "prop-carlos-3": "Oficina C"
+      };
+      deptoNombre = demoDeptos[inq.depto_id] || "N/A";
+    } else {
+      deptoNombre = inq.depto_id || "N/A";
+    }
+
+    return {
+      nombre: inq.nombre,
+      depto: deptoNombre
     };
   };
 
@@ -483,38 +526,76 @@ export default function Inicio({ sesion }) {
 
       {/* ================= 1. DASHBOARD DE GASTOS POR SERVICIO ================= */}
       <section className="tarjeta-premium bg-white border border-slate-200 shadow-xl space-y-5">
-        <h2 className="titulo-mediano flex items-center gap-2 border-b border-slate-100 pb-3">
-          <BarChart3 className="h-6 w-6 text-blue-600" aria-hidden="true" />
-          <span>Cobros y Gastos por Servicio</span>
-        </h2>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-3">
+          <h2 className="titulo-mediano flex items-center gap-2">
+            <BarChart3 className="h-6 w-6 text-blue-600" aria-hidden="true" />
+            <span>Cobros y Gastos por Servicio</span>
+          </h2>
+          
+          {/* Selector de Mes Dinámico */}
+          <div className="flex items-center gap-2 select-none">
+            <label htmlFor="mes-filtro" className="text-base font-black text-slate-700 whitespace-nowrap">Periodo:</label>
+            <select
+              id="mes-filtro"
+              className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 border border-slate-350 rounded-lg text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={mesFiltro}
+              onChange={(e) => setMesFiltro(e.target.value)}
+            >
+              {mesesDisponibles.length === 0 ? (
+                <option value={periodoActual}>{periodoActual}</option>
+              ) : (
+                mesesDisponibles.map(m => (
+                  <option key={m} value={m}>{m}</option>
+                ))
+              )}
+            </select>
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex flex-col justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase">Luz Eléctrica</span>
-            <span className="text-2xl font-black text-blue-800 mt-2">S/ {gastos.luz.toFixed(2)}</span>
+            <div>
+              <span className="text-xs font-bold text-slate-500 uppercase block">Luz Eléctrica Total</span>
+              <span className="text-2xl font-black text-blue-800 block mt-1">S/ {gastos.luz.toFixed(2)}</span>
+            </div>
+            <span className="text-xs font-extrabold text-blue-600 mt-2 block bg-blue-100/50 px-2 py-0.5 rounded w-max">
+              {gastos.luzKw} kWh del servicio
+            </span>
           </div>
+
           <div className="bg-cyan-50 border border-cyan-200 rounded-xl p-4 flex flex-col justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase">Agua Potable</span>
-            <span className="text-2xl font-black text-cyan-800 mt-2">S/ {gastos.agua.toFixed(2)}</span>
+            <div>
+              <span className="text-xs font-bold text-slate-500 uppercase block">Agua Potable Total</span>
+              <span className="text-2xl font-black text-cyan-800 block mt-1">S/ {gastos.agua.toFixed(2)}</span>
+            </div>
+            <span className="text-xs font-extrabold text-cyan-600 mt-2 block bg-cyan-100/50 px-2 py-0.5 rounded w-max">
+              {gastos.aguaM3} m³ del servicio
+            </span>
           </div>
+
           <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex flex-col justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase">Seguridad / Mant.</span>
-            <span className="text-2xl font-black text-emerald-800 mt-2">S/ {gastos.seguridad.toFixed(2)}</span>
+            <div>
+              <span className="text-xs font-bold text-slate-500 uppercase block">Seguridad / Mant. Total</span>
+              <span className="text-2xl font-black text-emerald-800 block mt-1">S/ {gastos.seguridad.toFixed(2)}</span>
+            </div>
+            <span className="text-xs font-extrabold text-emerald-600 mt-2 block bg-emerald-100/50 px-2 py-0.5 rounded w-max">
+              Cuota fija de condominio
+            </span>
           </div>
         </div>
 
         {/* Gráfico SVG de barras de alto contraste para accesibilidad */}
         <div className="bg-slate-50 rounded-xl p-5 border border-slate-200">
-          <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider block mb-4">Gráfico Comparativo de Servicios</span>
+          <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider block mb-4">Gráfico Comparativo de Costos ({mesFiltro})</span>
           
           {gastos.total === 0 ? (
-            <p className="text-sm font-bold text-slate-400 text-center italic py-4">No hay lecturas registradas para graficar</p>
+            <p className="text-sm font-bold text-slate-400 text-center italic py-4">No hay consumos registrados para graficar en este periodo</p>
           ) : (
             <div className="space-y-4">
               {/* Barra Luz */}
               <div className="space-y-1">
                 <div className="flex justify-between text-xs font-bold text-slate-700">
-                  <span>Luz Eléctrica</span>
+                  <span>Luz Eléctrica (S/)</span>
                   <span>{Math.round((gastos.luz / gastos.total) * 100)}%</span>
                 </div>
                 <div className="w-full h-7 bg-slate-200 rounded-md overflow-hidden flex items-center">
@@ -522,7 +603,7 @@ export default function Inicio({ sesion }) {
                     className="h-full bg-blue-600 transition-all duration-300 flex items-center pl-2 text-white text-[10px] font-black"
                     style={{ width: `${Math.max(8, (gastos.luz / gastos.total) * 100)}%` }}
                   >
-                    S/ {gastos.luz.toFixed(0)}
+                    S/ {gastos.luz.toFixed(0)} ({gastos.luzKw} kWh)
                   </div>
                 </div>
               </div>
@@ -530,7 +611,7 @@ export default function Inicio({ sesion }) {
               {/* Barra Agua */}
               <div className="space-y-1">
                 <div className="flex justify-between text-xs font-bold text-slate-700">
-                  <span>Agua Potable</span>
+                  <span>Agua Potable (S/)</span>
                   <span>{Math.round((gastos.agua / gastos.total) * 100)}%</span>
                 </div>
                 <div className="w-full h-7 bg-slate-200 rounded-md overflow-hidden flex items-center">
@@ -538,7 +619,7 @@ export default function Inicio({ sesion }) {
                     className="h-full bg-cyan-500 transition-all duration-300 flex items-center pl-2 text-white text-[10px] font-black"
                     style={{ width: `${Math.max(8, (gastos.agua / gastos.total) * 100)}%` }}
                   >
-                    S/ {gastos.agua.toFixed(0)}
+                    S/ {gastos.agua.toFixed(0)} ({gastos.aguaM3} m³)
                   </div>
                 </div>
               </div>
@@ -546,7 +627,7 @@ export default function Inicio({ sesion }) {
               {/* Barra Seguridad */}
               <div className="space-y-1">
                 <div className="flex justify-between text-xs font-bold text-slate-700">
-                  <span>Seguridad y Mantenimiento</span>
+                  <span>Seguridad y Mantenimiento (S/)</span>
                   <span>{Math.round((gastos.seguridad / gastos.total) * 100)}%</span>
                 </div>
                 <div className="w-full h-7 bg-slate-200 rounded-md overflow-hidden flex items-center">
@@ -558,6 +639,90 @@ export default function Inicio({ sesion }) {
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+        </div>
+
+        {/* Desglose de Consumo por Cliente */}
+        <div className="bg-slate-50 rounded-xl p-5 border border-slate-200 space-y-4">
+          <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider block">
+            Consumo Detallado por Cliente ({mesFiltro})
+          </span>
+          
+          {listaLecturas.filter(l => l.mes === mesFiltro).length === 0 ? (
+            <p className="text-sm font-bold text-slate-400 text-center italic py-4">
+              No hay consumos registrados para ningún cliente en este periodo.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {listaLecturas.filter(l => l.mes === mesFiltro).map((lec) => {
+                const inqInfo = obtenerInquilinoInfo(lec.inquilino_id);
+                const luzInfo = lec.luz || {};
+                const luzKwh = Math.max(0, (Number(luzInfo.actual) || 0) - (Number(luzInfo.anterior) || 0));
+                const luzCosto = luzKwh * (Number(luzInfo.costo_unitario) || 1.0);
+
+                const aguaInfo = lec.agua || {};
+                const aguaM3 = Math.max(0, (Number(aguaInfo.actual) || 0) - (Number(aguaInfo.anterior) || 0));
+                const aguaCosto = aguaM3 * (Number(aguaInfo.costo_unitario) || 4.0);
+
+                const totalServicios = luzCosto + aguaCosto + (Number(lec.seguridad) || 0);
+
+                return (
+                  <div key={lec.id} className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm flex flex-col justify-between space-y-4">
+                    {/* Header */}
+                    <div className="flex justify-between items-start border-b border-slate-100 pb-2.5">
+                      <div>
+                        <span className="block text-base font-black text-slate-900 leading-tight">{inqInfo.nombre}</span>
+                        <span className="inline-block mt-1 text-xs font-extrabold px-2 py-0.5 bg-slate-100 text-slate-600 rounded">
+                          {inqInfo.depto}
+                        </span>
+                      </div>
+                      <span className={lec.pagado ? "insignia-verde" : "insignia-roja"}>
+                        {lec.pagado ? "PAGADO" : "PENDIENTE"}
+                      </span>
+                    </div>
+
+                    {/* Consumo Breakdown */}
+                    <div className="grid grid-cols-3 gap-3 text-center">
+                      {/* Luz */}
+                      <div className="bg-blue-50/50 p-2 rounded-lg border border-blue-100/50">
+                        <div className="flex justify-center text-blue-600 mb-1" aria-hidden="true">
+                          <Lightbulb className="h-4 w-4" />
+                        </div>
+                        <span className="block text-[10px] font-extrabold text-slate-400 uppercase">Luz</span>
+                        <span className="block text-sm font-black text-blue-800">{luzKwh} kWh</span>
+                        <span className="block text-[11px] font-bold text-slate-500">S/ {luzCosto.toFixed(2)}</span>
+                      </div>
+
+                      {/* Agua */}
+                      <div className="bg-cyan-50/50 p-2 rounded-lg border border-cyan-100/50">
+                        <div className="flex justify-center text-cyan-500 mb-1" aria-hidden="true">
+                          <Droplet className="h-4 w-4" />
+                        </div>
+                        <span className="block text-[10px] font-extrabold text-slate-400 uppercase">Agua</span>
+                        <span className="block text-sm font-black text-cyan-800">{aguaM3} m³</span>
+                        <span className="block text-[11px] font-bold text-slate-500">S/ {aguaCosto.toFixed(2)}</span>
+                      </div>
+
+                      {/* Seguridad */}
+                      <div className="bg-emerald-50/50 p-2 rounded-lg border border-emerald-100/50">
+                        <div className="flex justify-center text-emerald-600 mb-1" aria-hidden="true">
+                          <Shield className="h-4 w-4" />
+                        </div>
+                        <span className="block text-[10px] font-extrabold text-slate-400 uppercase">Seguridad</span>
+                        <span className="block text-sm font-black text-emerald-800">Fijo</span>
+                        <span className="block text-[11px] font-bold text-slate-500">S/ {(Number(lec.seguridad) || 0).toFixed(2)}</span>
+                      </div>
+                    </div>
+
+                    {/* Total Card */}
+                    <div className="flex justify-between items-center bg-slate-50 px-3 py-2 rounded-lg border border-slate-100 text-sm">
+                      <span className="font-extrabold text-slate-500">Total Servicios:</span>
+                      <span className="font-black text-slate-800">S/ {totalServicios.toFixed(2)}</span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
