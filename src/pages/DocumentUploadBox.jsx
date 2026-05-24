@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 
 // Extensiones permitidas por los requerimientos
-const ALLOWED_EXTENSIONS = ["docx", "doc", "pdf", "png", "jpg", "jpeg"];
+const ALLOWED_EXTENSIONS = ["docx", "doc", "pdf", "png", "jpg", "jpj", "jpeg"];
 
 export default function DocumentUploadBox({ inquilino }) {
   const { saveInquilino } = useApp();
@@ -196,7 +196,7 @@ export default function DocumentUploadBox({ inquilino }) {
   const getFileCategory = (fileName, url) => {
     if (!fileName) return "unknown";
     const ext = fileName.split('.').pop().toLowerCase();
-    if (["png", "jpg", "jpeg"].includes(ext) || url?.startsWith("data:image/")) {
+    if (["png", "jpg", "jpeg", "jpj"].includes(ext) || url?.startsWith("data:image/")) {
       return "image";
     }
     if (ext === "pdf" || url?.startsWith("data:application/pdf")) {
@@ -253,7 +253,7 @@ export default function DocumentUploadBox({ inquilino }) {
           <input 
             type="file" 
             className="absolute inset-0 opacity-0 cursor-pointer z-10" 
-            accept=".docx,.doc,.pdf,.png,.jpg,.jpeg"
+            accept=".docx,.doc,.pdf,.png,.jpg,.jpj,.jpeg"
             onChange={(e) => handleFileChange(e, type)}
             disabled={isUploading}
           />
