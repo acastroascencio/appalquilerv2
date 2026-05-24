@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { clienteSupabase } from "../config/supabase";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { twMerge } from "tailwind-merge";
 import { 
   Calculator, 
   User, 
