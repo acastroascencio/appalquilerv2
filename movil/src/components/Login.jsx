@@ -91,7 +91,7 @@ export default function Login({ setSesionActiva }) {
                   autoComplete="email"
                   required
                 />
-                <Mail className="absolute left-4 top-4.5 h-5 w-5 text-slate-400" aria-hidden="true" />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" aria-hidden="true" />
               </div>
             </div>
 
@@ -106,12 +106,12 @@ export default function Login({ setSesionActiva }) {
                   type="password"
                   className="campo-entrada-gigante pl-11"
                   placeholder="Tu contraseña secreta"
-                  value={clave}
+                  value={correo ? clave : ""} // evita auto-completados molestos
                   onChange={(e) => setClave(e.target.value)}
                   autoComplete="current-password"
                   required
                 />
-                <KeyRound className="absolute left-4 top-4.5 h-5 w-5 text-slate-400" aria-hidden="true" />
+                <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" aria-hidden="true" />
               </div>
             </div>
 
@@ -130,6 +130,17 @@ export default function Login({ setSesionActiva }) {
                 <span>Entrar</span>
               )}
             </button>
+
+            {/* Botón de Entrada de Demostración */}
+            <div className="text-center pt-3 border-t border-slate-100 mt-4">
+              <button
+                type="button"
+                onClick={() => setSesionActiva({ user: { id: "admin-prueba-id" } })}
+                className="text-base font-extrabold text-blue-600 hover:text-blue-800 underline focus:ring-4 focus:ring-blue-100 rounded-md px-3 py-1.5 transition-all duration-150"
+              >
+                Probar sin Supabase (Modo Demostración)
+              </button>
+            </div>
 
           </form>
         </section>
