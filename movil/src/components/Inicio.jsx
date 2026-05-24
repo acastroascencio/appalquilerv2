@@ -59,9 +59,9 @@ export default function Inicio({ sesion }) {
     setCargando(true);
     setErrorGuardado("");
     try {
-      if (adminId === "admin-prueba-id") {
-        // Datos simulados locales interactivos para el Modo Demostración
-        const demoPerfil = {
+      if (adminId.startsWith("demo-") || adminId === "admin-prueba-id") {
+        // Datos del perfil por defecto (Mario Castro)
+        let demoPerfil = {
           nombre_completo: "Mario Andres Castro Ascencio (Demo)",
           datos_pago: {
             yape: "987654321",
@@ -74,18 +74,78 @@ export default function Inicio({ sesion }) {
             tarifa_agua: 4.0
           }
         };
+
+        let demoInqs = [
+          { id: "inq-mario-1", nombre: "Juan Pérez García", celular: "946131777", depto_id: "prop-mario-1", moto_info: { placa: "ABC-123", monto_asociacion: 50 } },
+          { id: "inq-mario-2", nombre: "María López Rodríguez", celular: "912345678", depto_id: "prop-mario-2", moto_info: { placa: "", monto_asociacion: 0 } },
+          { id: "inq-mario-3", nombre: "Pedro Alcántara Vega", celular: "988888888", depto_id: "prop-mario-3", moto_info: { placa: "XYZ-789", monto_asociacion: 40 } }
+        ];
+
+        let demoLects = [
+          { id: "lec-mario-1", inquilino_id: "inq-mario-1", mes: "Mayo 2026", luz: { anterior: 1020, actual: 1080, costo_unitario: 1.0 }, agua: { anterior: 110, actual: 118, costo_unitario: 4.0 }, seguridad: 15, pagado: false },
+          { id: "lec-mario-2", inquilino_id: "inq-mario-2", mes: "Mayo 2026", luz: { anterior: 2040, actual: 2080, costo_unitario: 1.0 }, agua: { anterior: 350, actual: 362, costo_unitario: 4.0 }, seguridad: 15, pagado: true },
+          { id: "lec-mario-3", inquilino_id: "inq-mario-3", mes: "Mayo 2026", luz: { anterior: 1500, actual: 1550, costo_unitario: 1.0 }, agua: { anterior: 100, actual: 105, costo_unitario: 4.0 }, seguridad: 15, pagado: false }
+        ];
+
+        // Cambiar datos si es otro administrador
+        if (adminId === "demo-sofia") {
+          demoPerfil = {
+            nombre_completo: "Sofía Elena Rodríguez (Demo)",
+            datos_pago: {
+              yape: "955555555",
+              plin: "955555555",
+              bcp_cuenta: "193-45678901-0-34",
+              bcp_cci: "002-19345678901034-88",
+              interbank_cuenta: "210-987654321",
+              interbank_cci: "003-210987654321-22",
+              tarifa_luz: 1.2,
+              tarifa_agua: 4.5
+            }
+          };
+
+          demoInqs = [
+            { id: "inq-sofia-1", nombre: "Carlos Fuentes Romero", celular: "999111222", depto_id: "prop-sofia-1", moto_info: { placa: "", monto_asociacion: 0 } },
+            { id: "inq-sofia-2", nombre: "Ana Gómez Solís", celular: "999333444", depto_id: "prop-sofia-2", moto_info: { placa: "MNO-456", monto_asociacion: 30 } },
+            { id: "inq-sofia-3", nombre: "Roberto Díaz Canseco", celular: "999555666", depto_id: "prop-sofia-3", moto_info: { placa: "", monto_asociacion: 0 } },
+            { id: "inq-sofia-4", nombre: "Lucía Mendez Castro", celular: "999777888", depto_id: "prop-sofia-4", moto_info: { placa: "789-DEF", monto_asociacion: 45 } }
+          ];
+
+          demoLects = [
+            { id: "lec-sofia-1", inquilino_id: "inq-sofia-1", mes: "Mayo 2026", luz: { anterior: 500, actual: 545, costo_unitario: 1.2 }, agua: { anterior: 80, actual: 85, costo_unitario: 4.5 }, seguridad: 20, pagado: true },
+            { id: "lec-sofia-2", inquilino_id: "inq-sofia-2", mes: "Mayo 2026", luz: { anterior: 1200, actual: 1260, costo_unitario: 1.2 }, agua: { anterior: 210, actual: 219, costo_unitario: 4.5 }, seguridad: 20, pagado: false },
+            { id: "lec-sofia-3", inquilino_id: "inq-sofia-3", mes: "Mayo 2026", luz: { anterior: 800, actual: 840, costo_unitario: 1.2 }, agua: { anterior: 120, actual: 124, costo_unitario: 4.5 }, seguridad: 20, pagado: true },
+            { id: "lec-sofia-4", inquilino_id: "inq-sofia-4", mes: "Mayo 2026", luz: { anterior: 2300, actual: 2370, costo_unitario: 1.2 }, agua: { anterior: 310, actual: 316, costo_unitario: 4.5 }, seguridad: 20, pagado: false }
+          ];
+        } else if (adminId === "demo-carlos") {
+          demoPerfil = {
+            nombre_completo: "Carlos Alberto Mendoza (Demo)",
+            datos_pago: {
+              yape: "966666666",
+              plin: "966666666",
+              bcp_cuenta: "194-88888888-0-99",
+              bcp_cci: "002-19488888888099-11",
+              interbank_cuenta: "220-444444444",
+              interbank_cci: "003-220444444444-55",
+              tarifa_luz: 1.5,
+              tarifa_agua: 5.0
+            }
+          };
+
+          demoInqs = [
+            { id: "inq-carlos-1", nombre: "Boutique Bella S.A.C.", celular: "987111111", depto_id: "prop-carlos-1", moto_info: { placa: "", monto_asociacion: 0 } },
+            { id: "inq-carlos-2", nombre: "Farmacia FarmaVida", celular: "987222222", depto_id: "prop-carlos-2", moto_info: { placa: "F-4563", monto_asociacion: 60 } },
+            { id: "inq-carlos-3", nombre: "Consultorio Dental Luz", celular: "987333333", depto_id: "prop-carlos-3", moto_info: { placa: "", monto_asociacion: 0 } }
+          ];
+
+          demoLects = [
+            { id: "lec-carlos-1", inquilino_id: "inq-carlos-1", mes: "Mayo 2026", luz: { anterior: 3000, actual: 3200, costo_unitario: 1.5 }, agua: { anterior: 400, actual: 412, costo_unitario: 5.0 }, seguridad: 30, pagado: false },
+            { id: "lec-carlos-2", inquilino_id: "inq-carlos-2", mes: "Mayo 2026", luz: { anterior: 4500, actual: 4750, costo_unitario: 1.5 }, agua: { anterior: 600, actual: 618, costo_unitario: 5.0 }, seguridad: 30, pagado: true },
+            { id: "lec-carlos-3", inquilino_id: "inq-carlos-3", mes: "Mayo 2026", luz: { anterior: 1200, actual: 1280, costo_unitario: 1.5 }, agua: { anterior: 150, actual: 154, costo_unitario: 5.0 }, seguridad: 30, pagado: false }
+          ];
+        }
+
         setDatosPerfil(demoPerfil);
-
-        const demoInqs = [
-          { id: "inq-1", nombre: "Juan Pérez García", celular: "946131777", depto_id: "prop-1", moto_info: { placa: "ABC-123", monto_asociacion: 50 } },
-          { id: "inq-2", nombre: "María López Rodríguez", celular: "912345678", depto_id: "prop-2", moto_info: { placa: "", monto_asociacion: 0 } }
-        ];
         setListaInquilinos(demoInqs);
-
-        const demoLects = [
-          { id: "lec-1", inquilino_id: "inq-1", mes: "Mayo 2026", luz: { anterior: 1020, actual: 1080, costo_unitario: 1.0 }, agua: { anterior: 110, actual: 118, costo_unitario: 4.0 }, seguridad: 15, pagado: false },
-          { id: "lec-2", inquilino_id: "inq-2", mes: "Mayo 2026", luz: { anterior: 2040, actual: 2080, costo_unitario: 1.0 }, agua: { anterior: 350, actual: 362, costo_unitario: 4.0 }, seguridad: 15, pagado: true }
-        ];
         setListaLecturas(demoLects);
         setCargando(false);
         return;
@@ -144,8 +204,40 @@ export default function Inicio({ sesion }) {
 
     async function cargarDetalle() {
       try {
-        // Cargar departamento asociado
-        if (inq.depto_id) {
+        // Bypasear Supabase si es un ID de demostración
+        if (adminId.startsWith("demo-") || adminId === "admin-prueba-id") {
+          let deptoNombre = "";
+          let deptoPrecio = 0;
+          if (adminId === "demo-sofia") {
+            const demoDeptos = {
+              "prop-sofia-1": { name: "Depto 101", price: 1000 },
+              "prop-sofia-2": { name: "Depto 102", price: 850 },
+              "prop-sofia-3": { name: "Depto 201", price: 1100 },
+              "prop-sofia-4": { name: "Depto 202", price: 950 }
+            };
+            deptoNombre = demoDeptos[inq.depto_id]?.name || "";
+            deptoPrecio = demoDeptos[inq.depto_id]?.price || 0;
+          } else if (adminId === "demo-carlos") {
+            const demoDeptos = {
+              "prop-carlos-1": { name: "Local A", price: 2500 },
+              "prop-carlos-2": { name: "Local B", price: 3000 },
+              "prop-carlos-3": { name: "Oficina C", price: 1800 }
+            };
+            deptoNombre = demoDeptos[inq.depto_id]?.name || "";
+            deptoPrecio = demoDeptos[inq.depto_id]?.price || 0;
+          } else {
+            const demoDeptos = {
+              "prop-mario-1": { name: "Depto 2A", price: 1200 },
+              "prop-mario-2": { name: "Depto 2B", price: 900 },
+              "prop-mario-3": { name: "Depto 3A", price: 1300 }
+            };
+            deptoNombre = demoDeptos[inq.depto_id]?.name || "";
+            deptoPrecio = demoDeptos[inq.depto_id]?.price || 0;
+          }
+          setAlquilerBase(deptoPrecio);
+          setNombreDepto(deptoNombre);
+        } else if (inq.depto_id) {
+          // Cargar departamento asociado
           const { data: depto, error: errDepto } = await clienteSupabase
             .from("departamentos")
             .select("identificador, precio_alquiler")
@@ -215,6 +307,33 @@ export default function Inicio({ sesion }) {
     setGuardando(true);
     setErrorGuardado("");
     setExitoGuardado(false);
+
+    // Bypasear Supabase si es un ID de demostración
+    if (adminId.startsWith("demo-") || adminId === "admin-prueba-id") {
+      const nuevaLectura = {
+        id: "lec-demo-" + Date.now(),
+        inquilino_id: inquilinoSeleccionado,
+        mes: periodoActual,
+        luz: {
+          anterior: lecturaAnterior,
+          actual: Number(lecturaActual),
+          costo_unitario: precioUnitarioLuz
+        },
+        agua: {
+          anterior: 0,
+          actual: 0,
+          costo_unitario: precioUnitarioAgua
+        },
+        seguridad: seguridadCuota,
+        pagado: false
+      };
+
+      setListaLecturas(prev => [nuevaLectura, ...prev]);
+      setExitoGuardado(true);
+      setLecturaActual("");
+      setGuardando(false);
+      return;
+    }
 
     try {
       const payload = {

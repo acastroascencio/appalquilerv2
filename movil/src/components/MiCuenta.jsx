@@ -29,6 +29,60 @@ export default function MiCuenta({ sesion, setSesionActiva }) {
       if (!adminId) return;
       setCargando(true);
       setErrorGuardado("");
+
+      // Bypasear Supabase si es un ID de demostración
+      if (adminId.startsWith("demo-") || adminId === "admin-prueba-id") {
+        let nombre = "Mario Andres Castro Ascencio";
+        let pago = {
+          yape: "987654321",
+          plin: "987654321",
+          bcp_cuenta: "191-98765432-0-12",
+          bcp_cci: "002-19198765432012-54",
+          interbank_cuenta: "200-300456789",
+          interbank_cci: "003-200300456789-11",
+          tarifa_luz: 1.0,
+          tarifa_agua: 4.0
+        };
+
+        if (adminId === "demo-sofia") {
+          nombre = "Sofía Elena Rodríguez";
+          pago = {
+            yape: "955555555",
+            plin: "955555555",
+            bcp_cuenta: "193-45678901-0-34",
+            bcp_cci: "002-19345678901034-88",
+            interbank_cuenta: "210-987654321",
+            interbank_cci: "003-210987654321-22",
+            tarifa_luz: 1.2,
+            tarifa_agua: 4.5
+          };
+        } else if (adminId === "demo-carlos") {
+          nombre = "Carlos Alberto Mendoza";
+          pago = {
+            yape: "966666666",
+            plin: "966666666",
+            bcp_cuenta: "194-88888888-0-99",
+            bcp_cci: "002-19488888888099-11",
+            interbank_cuenta: "220-444444444",
+            interbank_cci: "003-220444444444-55",
+            tarifa_luz: 1.5,
+            tarifa_agua: 5.0
+          };
+        }
+
+        setNombreCompleto(nombre);
+        setYape(pago.yape);
+        setPlin(pago.plin);
+        setBcpCuenta(pago.bcp_cuenta);
+        setBcpCci(pago.bcp_cci);
+        setInterbankCuenta(pago.interbank_cuenta);
+        setInterbankCci(pago.interbank_cci);
+        setTarifaLuz(pago.tarifa_luz);
+        setTarifaAgua(pago.tarifa_agua);
+        setCargando(false);
+        return;
+      }
+
       try {
         // Cargar desde tabla perfiles (RLS)
         const { data, error } = await clienteSupabase
@@ -76,6 +130,15 @@ export default function MiCuenta({ sesion, setSesionActiva }) {
     setGuardando(true);
     setErrorGuardado("");
     setExitoGuardado(false);
+
+    // Bypasear guardado en Supabase si es un ID de demostración
+    if (adminId.startsWith("demo-") || adminId === "admin-prueba-id") {
+      setTimeout(() => {
+        setExitoGuardado(true);
+        setGuardando(false);
+      }, 600);
+      return;
+    }
 
     try {
       const payload = {

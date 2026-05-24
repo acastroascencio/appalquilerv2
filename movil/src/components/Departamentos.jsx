@@ -26,6 +26,35 @@ export default function Departamentos({ sesion }) {
     if (!adminId) return;
     setCargando(true);
     setErrorAccion("");
+
+    // Bypasear Supabase si es un ID de demostración
+    if (adminId.startsWith("demo-") || adminId === "admin-prueba-id") {
+      let deptos = [
+        { id: "prop-mario-1", identificador: "Depto 2A", precio_alquiler: 1200, configuracion: { habitaciones: 2, bano_propio: true, tiene_cocina: true }, fotos: [] },
+        { id: "prop-mario-2", identificador: "Depto 2B", precio_alquiler: 900, configuracion: { habitaciones: 1, bano_propio: true, tiene_cocina: true }, fotos: [] },
+        { id: "prop-mario-3", identificador: "Depto 3A", precio_alquiler: 1300, configuracion: { habitaciones: 2, bano_propio: true, tiene_cocina: true }, fotos: [] }
+      ];
+
+      if (adminId === "demo-sofia") {
+        deptos = [
+          { id: "prop-sofia-1", identificador: "Depto 101", precio_alquiler: 1000, configuracion: { habitaciones: 2, bano_propio: true, tiene_cocina: true }, fotos: [] },
+          { id: "prop-sofia-2", identificador: "Depto 102", precio_alquiler: 850, configuracion: { habitaciones: 1, bano_propio: true, tiene_cocina: false }, fotos: [] },
+          { id: "prop-sofia-3", identificador: "Depto 201", precio_alquiler: 1100, configuracion: { habitaciones: 2, bano_propio: true, tiene_cocina: true }, fotos: [] },
+          { id: "prop-sofia-4", identificador: "Depto 202", precio_alquiler: 950, configuracion: { habitaciones: 1, bano_propio: true, tiene_cocina: true }, fotos: [] }
+        ];
+      } else if (adminId === "demo-carlos") {
+        deptos = [
+          { id: "prop-carlos-1", identificador: "Local A", precio_alquiler: 2500, configuracion: { habitaciones: 1, bano_propio: true, tiene_cocina: false }, fotos: [] },
+          { id: "prop-carlos-2", identificador: "Local B", precio_alquiler: 3000, configuracion: { habitaciones: 2, bano_propio: true, tiene_cocina: false }, fotos: [] },
+          { id: "prop-carlos-3", identificador: "Oficina C", precio_alquiler: 1800, configuracion: { habitaciones: 1, bano_propio: true, tiene_cocina: false }, fotos: [] }
+        ];
+      }
+
+      setListaDeptos(deptos);
+      setCargando(false);
+      return;
+    }
+
     try {
       const { data, error } = await clienteSupabase
         .from("departamentos")
@@ -95,6 +124,31 @@ export default function Departamentos({ sesion }) {
     setGuardando(true);
     setErrorAccion("");
 
+    // Bypasear Supabase si es un ID de demostración
+    if (adminId.startsWith("demo-") || adminId === "admin-prueba-id") {
+      const nuevoDepto = {
+        id: deptoAEditar ? deptoAEditar.id : "prop-demo-" + Date.now(),
+        identificador,
+        precio_alquiler: Number(precioAlquiler),
+        configuracion: {
+          habitaciones: Number(habitaciones),
+          bano_propio: banoPropio,
+          tiene_cocina: tieneCocina
+        },
+        fotos
+      };
+
+      if (deptoAEditar) {
+        setListaDeptos(prev => prev.map(d => d.id === deptoAEditar.id ? nuevoDepto : d));
+      } else {
+        setListaDeptos(prev => [...prev, nuevoDepto]);
+      }
+
+      setMostrarModal(false);
+      setGuardando(false);
+      return;
+    }
+
     try {
       const payload = {
         admin_id: adminId,
@@ -136,6 +190,11 @@ export default function Departamentos({ sesion }) {
 
   const eliminarDepto = async (id, ident) => {
     if (window.confirm(`¿Confirmas que deseas eliminar el departamento "${ident}"?`)) {
+      if (adminId.startsWith("demo-") || adminId === "admin-prueba-id") {
+        setListaDeptos(prev => prev.filter(d => d.id !== id));
+        return;
+      }
+
       try {
         const { error } = await clienteSupabase
           .from("departamentos")
@@ -268,7 +327,7 @@ export default function Departamentos({ sesion }) {
 
       {/* MODAL GIGANTE DE AGREGAR / EDITAR */}
       {mostrarModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-slate-950/60 backdrop-blur-sm p-4 overflow-y-auto">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-100 flex flex-col my-8 page-enter text-lg font-bold">
             
             {/* Cabecera */}

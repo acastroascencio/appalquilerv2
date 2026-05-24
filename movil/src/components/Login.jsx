@@ -131,15 +131,57 @@ export default function Login({ setSesionActiva }) {
               )}
             </button>
 
-            {/* Botón de Entrada de Demostración */}
-            <div className="text-center pt-3 border-t border-slate-100 mt-4">
-              <button
-                type="button"
-                onClick={() => setSesionActiva({ user: { id: "admin-prueba-id" } })}
-                className="text-base font-extrabold text-blue-600 hover:text-blue-800 underline focus:ring-4 focus:ring-blue-100 rounded-md px-3 py-1.5 transition-all duration-150"
-              >
-                Probar sin Supabase (Modo Demostración)
-              </button>
+            {/* Acceso Rápido (Modo Demostración con 3 Cuentas Preconfiguradas) */}
+            <div className="pt-5 border-t border-slate-100 mt-6 space-y-4">
+              <span className="block text-sm font-black text-slate-500 uppercase tracking-wider text-center">
+                Ingresar en Modo Demostración (3 Cuentas)
+              </span>
+              <div className="grid grid-cols-1 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setSesionActiva({ user: { id: "demo-mario" } })}
+                  className="w-full text-left p-3.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl transition-all duration-150 flex items-center justify-between focus:ring-4 focus:ring-slate-100"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="bg-emerald-500 text-white w-9 h-9 rounded-lg font-black text-sm flex items-center justify-center">MC</div>
+                    <div>
+                      <span className="block text-base font-black text-slate-800">Mario Castro</span>
+                      <span className="block text-xs font-semibold text-slate-400">Admin Residencial (3 Deptos)</span>
+                    </div>
+                  </div>
+                  <span className="text-sm font-black text-blue-600 uppercase">Entrar</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setSesionActiva({ user: { id: "demo-sofia" } })}
+                  className="w-full text-left p-3.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl transition-all duration-150 flex items-center justify-between focus:ring-4 focus:ring-slate-100"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="bg-blue-500 text-white w-9 h-9 rounded-lg font-black text-sm flex items-center justify-center">SR</div>
+                    <div>
+                      <span className="block text-base font-black text-slate-800">Sofía Rodríguez</span>
+                      <span className="block text-xs font-semibold text-slate-400">Admin Condominio (4 Deptos)</span>
+                    </div>
+                  </div>
+                  <span className="text-sm font-black text-blue-600 uppercase">Entrar</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setSesionActiva({ user: { id: "demo-carlos" } })}
+                  className="w-full text-left p-3.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl transition-all duration-150 flex items-center justify-between focus:ring-4 focus:ring-slate-100"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="bg-amber-500 text-white w-9 h-9 rounded-lg font-black text-sm flex items-center justify-center">CM</div>
+                    <div>
+                      <span className="block text-base font-black text-slate-800">Carlos Mendoza</span>
+                      <span className="block text-xs font-semibold text-slate-400">Admin Comercial (3 Locales)</span>
+                    </div>
+                  </div>
+                  <span className="text-sm font-black text-blue-600 uppercase">Entrar</span>
+                </button>
+              </div>
             </div>
 
           </form>
