@@ -692,6 +692,27 @@ export default function Inquilinos({ sesion }) {
                 </div>
               )}
 
+              {/* Botones de Acción */}
+              <div className="flex gap-3 pt-4 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setMostrarModal(false)}
+                  className="flex-1/2 boton-secundario-gigante text-base"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={guardando}
+                  className="flex-1 boton-positivo-gigante text-base font-black"
+                >
+                  {guardando ? "Registrando..." : "Registrar"}
+                </button>
+              </div>
+
+            </form>
+          </div>
+        </div>
       )}
 
       {/* 2. MODAL DE CONFIRMACIÓN DE CARGA */}
