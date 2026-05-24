@@ -75,3 +75,23 @@ ALTER TABLE public.lecturas_mensuales ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Los administradores gestionan sus lecturas" ON public.lecturas_mensuales;
 CREATE POLICY "Los administradores gestionan sus lecturas" ON public.lecturas_mensuales
   FOR ALL USING (auth.uid() = admin_id);
+
+
+-- 5. TABLA LOGS DE SISTEMA / BITÁCORA
+CREATE TABLE IF NOT EXISTS public.logs_sistema (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  admin_id UUID REFERENCES auth.users ON DELETE CASCADE,
+  accion TEXT NOT NULL,
+  descripcion TEXT NOT NULL,
+  detalles JSONB DEFAULT '{}'::JSONB,
+  tipo VARCHAR(50) DEFAULT 'INFO',
+  fecha TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::TEXT, NOW()) NOT NULL
+);
+
+ALTER TABLE public.logs_sistema ENABLE ROW LEVEL SECURITY;
+
+-- Políticas de RLS para Logs
+DROP POLICY IF EXISTS "Los administradores gestionan sus propios logs" ON public.logs_sistema;
+CREATE POLICY "Los administradores gestionan sus propios logs" ON public.logs_sistema
+  FOR ALL USING (auth.uid() = admin_id);
+

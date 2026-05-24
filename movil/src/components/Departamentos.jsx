@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { clienteSupabase } from "../config/supabase";
 import { PlusCircle, Building, X, Upload, Trash2, Edit, AlertCircle } from "lucide-react";
+import { registrarLogSistema } from "../utils/logger";
+
 
 export default function Departamentos({ sesion }) {
   const adminId = sesion?.user?.id;
@@ -144,6 +146,14 @@ export default function Departamentos({ sesion }) {
         setListaDeptos(prev => [...prev, nuevoDepto]);
       }
 
+      await registrarLogSistema(adminId, {
+        accion: deptoAEditar ? "MODIFICAR_DEPARTAMENTO" : "CREAR_DEPARTAMENTO",
+        descripcion: deptoAEditar
+          ? `Se actualizó el departamento "${identificador}" (Demo)`
+          : `Se creó el departamento "${identificador}" (Demo)`,
+        detalles: { id: nuevoDepto.id, identificador }
+      });
+
       setMostrarModal(false);
       setGuardando(false);
       return;
@@ -169,12 +179,22 @@ export default function Departamentos({ sesion }) {
           .update(payload)
           .eq("id", deptoAEditar.id);
         if (error) throw error;
+        await registrarLogSistema(adminId, {
+          accion: "MODIFICAR_DEPARTAMENTO",
+          descripcion: `Se actualizó el departamento "${identificador}"`,
+          detalles: { id: deptoAEditar.id, identificador }
+        });
       } else {
         // Insertar nuevo
         const { error } = await clienteSupabase
           .from("departamentos")
           .insert([payload]);
         if (error) throw error;
+        await registrarLogSistema(adminId, {
+          accion: "CREAR_DEPARTAMENTO",
+          descripcion: `Se creó el departamento "${identificador}"`,
+          detalles: { identificador }
+        });
       }
 
       setMostrarModal(false);
@@ -192,6 +212,11 @@ export default function Departamentos({ sesion }) {
     if (window.confirm(`¿Confirmas que deseas eliminar el departamento "${ident}"?`)) {
       if (adminId.startsWith("demo-") || adminId === "admin-prueba-id") {
         setListaDeptos(prev => prev.filter(d => d.id !== id));
+        await registrarLogSistema(adminId, {
+          accion: "ELIMINAR_DEPARTAMENTO",
+          descripcion: `Se eliminó el departamento "${ident}" (Demo)`,
+          detalles: { id }
+        });
         return;
       }
 
@@ -202,6 +227,11 @@ export default function Departamentos({ sesion }) {
           .eq("id", id);
         
         if (error) throw error;
+        await registrarLogSistema(adminId, {
+          accion: "ELIMINAR_DEPARTAMENTO",
+          descripcion: `Se eliminó el departamento "${ident}"`,
+          detalles: { id }
+        });
         await cargarDepartamentos();
       } catch (err) {
         console.error("Error al eliminar departamento:", err);

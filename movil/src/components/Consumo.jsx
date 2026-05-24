@@ -17,6 +17,8 @@ import {
   HelpCircle,
   Droplet
 } from "lucide-react";
+import { registrarLogSistema } from "../utils/logger";
+
 
 export default function Consumo({ sesion }) {
   const adminId = sesion?.user?.id;
@@ -337,13 +339,21 @@ export default function Consumo({ sesion }) {
       pagado: false
     };
 
+    const inq = listaInquilinos.find(i => i.id === inquilinoSeleccionado);
+    const nombreInq = inq ? inq.nombre : "Desconocido";
+
     if (adminId.startsWith("demo-") || adminId === "admin-prueba-id") {
-      setTimeout(() => {
+      setTimeout(async () => {
         setListaLecturas(prev => [payload, ...prev]);
         setExitoGuardado(true);
         setLecturaActual("");
         setLecturaActualAgua("");
         setGuardando(false);
+        await registrarLogSistema(adminId, {
+          accion: "CREAR_CONSUMO",
+          descripcion: `Se registró el consumo del periodo ${periodoActual} del inquilino "${nombreInq}" (Demo)`,
+          detalles: { inquilino: nombreInq, periodo: periodoActual }
+        });
       }, 600);
       return;
     }
@@ -354,6 +364,12 @@ export default function Consumo({ sesion }) {
         .insert([payload]);
 
       if (error) throw error;
+
+      await registrarLogSistema(adminId, {
+        accion: "CREAR_CONSUMO",
+        descripcion: `Se registró el consumo del periodo ${periodoActual} del inquilino "${nombreInq}"`,
+        detalles: { inquilino: nombreInq, periodo: periodoActual }
+      });
 
       setExitoGuardado(true);
       setLecturaActual("");

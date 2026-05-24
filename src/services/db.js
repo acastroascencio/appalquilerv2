@@ -269,5 +269,37 @@ export const db = {
       localStorage.setItem("alquiler_config", JSON.stringify(config));
       return config;
     }
+  },
+
+  // LOGS DE SISTEMA / BITÁCORA
+  async registrarLog(log) {
+    const adminId = log.admin_id || "web-admin";
+    const logData = {
+      admin_id: adminId,
+      accion: log.accion || "ACCION",
+      descripcion: log.descripcion || "",
+      detalles: log.detalles || {},
+      tipo: log.tipo || "INFO",
+      fecha: new Date().toISOString()
+    };
+    
+    if (isFirebaseConfigured) {
+      try {
+        await addDoc(collection(firestore, "LogsSistema"), logData);
+      } catch (error) {
+        console.error("Error al guardar log en Firebase:", error);
+      }
+    } else {
+      try {
+        const logs = JSON.parse(localStorage.getItem("alquiler_logs") || "[]");
+        logData.id = "log-" + Date.now() + "-" + Math.random().toString(36).slice(2, 11);
+        logs.push(logData);
+        localStorage.setItem("alquiler_logs", JSON.stringify(logs));
+      } catch (error) {
+        console.error("Error al guardar log en LocalStorage:", error);
+      }
+    }
+    return logData;
   }
 };
+

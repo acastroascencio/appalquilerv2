@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { clienteSupabase } from "../config/supabase";
 import { Shield, CreditCard, DollarSign, Save, LogOut, AlertCircle } from "lucide-react";
+import { registrarLogSistema } from "../utils/logger";
+
 
 export default function MiCuenta({ sesion, setSesionActiva }) {
   const adminId = sesion?.user?.id;
@@ -133,9 +135,14 @@ export default function MiCuenta({ sesion, setSesionActiva }) {
 
     // Bypasear guardado en Supabase si es un ID de demostración
     if (adminId.startsWith("demo-") || adminId === "admin-prueba-id") {
-      setTimeout(() => {
+      setTimeout(async () => {
         setExitoGuardado(true);
         setGuardando(false);
+        await registrarLogSistema(adminId, {
+          accion: "GUARDAR_CONFIGURACION",
+          descripcion: `Se actualizaron las tarifas y cuentas bancarias del propietario "${nombreCompleto}" (Demo)`,
+          detalles: { nombre: nombreCompleto }
+        });
       }, 600);
       return;
     }
@@ -163,6 +170,12 @@ export default function MiCuenta({ sesion, setSesionActiva }) {
 
       if (error) throw error;
 
+      await registrarLogSistema(adminId, {
+        accion: "GUARDAR_CONFIGURACION",
+        descripcion: `Se actualizaron las tarifas y cuentas bancarias del propietario "${nombreCompleto}"`,
+        detalles: { nombre: nombreCompleto }
+      });
+
       setExitoGuardado(true);
     } catch (err) {
       console.error("Error al guardar perfil:", err);
@@ -175,6 +188,10 @@ export default function MiCuenta({ sesion, setSesionActiva }) {
 
   const cerrarSesionApp = async () => {
     if (window.confirm("¿Confirmas que deseas salir de tu cuenta?")) {
+      await registrarLogSistema(adminId, {
+        accion: "CERRAR_SESION",
+        descripcion: `El usuario "${nombreCompleto || adminId}" cerró sesión`
+      });
       await clienteSupabase.auth.signOut();
       setSesionActiva(null);
     }

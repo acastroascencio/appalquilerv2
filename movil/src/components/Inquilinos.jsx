@@ -4,6 +4,8 @@ import {
   PlusCircle, Users, X, Phone, Building, Car, Trash2, Edit, 
   AlertCircle, FileText, Upload, Calendar, AlertTriangle, Download, Eye 
 } from "lucide-react";
+import { registrarLogSistema } from "../utils/logger";
+
 
 export default function Inquilinos({ sesion }) {
   const adminId = sesion?.user?.id;
@@ -54,9 +56,9 @@ export default function Inquilinos({ sesion }) {
     return true;
   };
 
-  const procesarCarga = (file, tipo, inputElement) => {
+  const procesarCarga = async (file, tipo, inputElement) => {
     const lector = new FileReader();
-    lector.onloadend = () => {
+    lector.onloadend = async () => {
       const timestamp = new Date().toISOString();
       const newRecord = {
         id: `doc-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
@@ -66,14 +68,65 @@ export default function Inquilinos({ sesion }) {
         fecha: timestamp
       };
 
-      if (tipo === "dni") {
-        setDniBase64(lector.result);
+      // Si estamos editando, guardar en base de datos inmediatamente
+      if (inqAEditar) {
+        try {
+          const updatedHistorial = [...(inqAEditar.documentos?.historial || []), newRecord];
+          const updatedDocs = {
+            ...inqAEditar.documentos,
+            [`${tipo}_url`]: lector.result,
+            historial: updatedHistorial
+          };
+
+          if (adminId.startsWith("demo-") || adminId === "admin-prueba-id") {
+            // Guardar en demo local (localStorage)
+            const locales = JSON.parse(localStorage.getItem(`demo_inquilinos_${adminId}`) || "[]");
+            const idx = locales.findIndex(i => i.id === inqAEditar.id);
+            if (idx !== -1) {
+              locales[idx].documentos = updatedDocs;
+              localStorage.setItem(`demo_inquilinos_${adminId}`, JSON.stringify(locales));
+            }
+            setListaInquilinos(locales);
+            await registrarLogSistema(adminId, {
+              accion: "SUBIR_DOCUMENTO",
+              descripcion: `Se subió el documento ${tipo.toUpperCase()} ("${file.name}") para el inquilino "${inqAEditar.nombre}" (Demo)`,
+              detalles: { id: inqAEditar.id, tipo }
+            });
+          } else {
+            // Guardar en Supabase real
+            const { error } = await clienteSupabase
+              .from("inquilinos")
+              .update({ documentos: updatedDocs })
+              .eq("id", inqAEditar.id);
+            if (error) throw error;
+            await registrarLogSistema(adminId, {
+              accion: "SUBIR_DOCUMENTO",
+              descripcion: `Se subió el documento ${tipo.toUpperCase()} ("${file.name}") para el inquilino "${inqAEditar.nombre}"`,
+              detalles: { id: inqAEditar.id, tipo }
+            });
+            await cargarDatos();
+          }
+
+          if (tipo === "dni") setDniBase64(lector.result);
+          else setContratoBase64(lector.result);
+          setHistorialDocs(updatedHistorial);
+
+          alert(`Archivo ${tipo.toUpperCase()} guardado directamente en la base de datos con éxito.`);
+        } catch (error) {
+          console.error("Error al guardar archivo en base de datos:", error);
+          alert("Ocurrió un error al guardar en la base de datos.");
+        }
       } else {
-        setContratoBase64(lector.result);
+        // Registrar: Cargar en memoria temporal
+        if (tipo === "dni") {
+          setDniBase64(lector.result);
+        } else {
+          setContratoBase64(lector.result);
+        }
+        setHistorialDocs(prev => [...prev, newRecord]);
+        alert(`Archivo ${tipo.toUpperCase()} cargado temporalmente. Se guardará al registrar el inquilino.`);
       }
 
-      setHistorialDocs(prev => [...prev, newRecord]);
-      alert(`Archivo ${tipo.toUpperCase()} cargado temporalmente. Se guardará al registrar/actualizar el inquilino.`);
       if (inputElement) inputElement.value = "";
     };
     lector.readAsDataURL(file);
@@ -112,11 +165,10 @@ export default function Inquilinos({ sesion }) {
     setShowConfirmModal(false);
   };
 
-  const eliminarDelHistorial = (docId, tipo) => {
+  const eliminarDelHistorial = async (docId, tipo) => {
     if (window.confirm("¿Estás seguro de eliminar este documento del historial?")) {
       const nuevoHistorial = historialDocs.filter(d => d.id !== docId);
-      setHistorialDocs(nuevoHistorial);
-
+      
       let activoUrl = tipo === "dni" ? dniBase64 : contratoBase64;
       const deletedDoc = historialDocs.find(d => d.id === docId);
 
@@ -129,10 +181,58 @@ export default function Inquilinos({ sesion }) {
         }
       }
 
-      if (tipo === "dni") {
-        setDniBase64(activoUrl);
+      // Si estamos editando, guardar en la base de datos inmediatamente
+      if (inqAEditar) {
+        try {
+          const updatedDocs = {
+            ...inqAEditar.documentos,
+            [`${tipo}_url`]: activoUrl,
+            historial: nuevoHistorial
+          };
+
+          if (adminId.startsWith("demo-") || adminId === "admin-prueba-id") {
+            const locales = JSON.parse(localStorage.getItem(`demo_inquilinos_${adminId}`) || "[]");
+            const idx = locales.findIndex(i => i.id === inqAEditar.id);
+            if (idx !== -1) {
+              locales[idx].documentos = updatedDocs;
+              localStorage.setItem(`demo_inquilinos_${adminId}`, JSON.stringify(locales));
+            }
+            setListaInquilinos(locales);
+            await registrarLogSistema(adminId, {
+              accion: "ELIMINAR_DOCUMENTO",
+              descripcion: `Se eliminó un documento ${tipo.toUpperCase()} del historial del inquilino "${inqAEditar.nombre}" (Demo)`,
+              detalles: { id: inqAEditar.id, docId }
+            });
+          } else {
+            const { error } = await clienteSupabase
+              .from("inquilinos")
+              .update({ documentos: updatedDocs })
+              .eq("id", inqAEditar.id);
+            if (error) throw error;
+            await registrarLogSistema(adminId, {
+              accion: "ELIMINAR_DOCUMENTO",
+              descripcion: `Se eliminó un documento ${tipo.toUpperCase()} del historial del inquilino "${inqAEditar.nombre}"`,
+              detalles: { id: inqAEditar.id, docId }
+            });
+            await cargarDatos();
+          }
+
+          setDniBase64(tipo === "dni" ? activoUrl : dniBase64);
+          setContratoBase64(tipo === "contrato" ? activoUrl : contratoBase64);
+          setHistorialDocs(nuevoHistorial);
+          alert("Documento eliminado del historial y actualizado en la base de datos.");
+        } catch (error) {
+          console.error("Error al eliminar del historial:", error);
+          alert("Ocurrió un error al guardar los cambios en la base de datos.");
+        }
       } else {
-        setContratoBase64(activoUrl);
+        // Modo Registro: Actualizar localmente
+        if (tipo === "dni") {
+          setDniBase64(activoUrl);
+        } else {
+          setContratoBase64(activoUrl);
+        }
+        setHistorialDocs(nuevoHistorial);
       }
     }
   };
@@ -158,27 +258,44 @@ export default function Inquilinos({ sesion }) {
     setErrorAccion("");
     try {
       if (adminId.startsWith("demo-") || adminId === "admin-prueba-id") {
-        // Cuentas de demostración locales
-        let demoInqs = [
-          { id: "inq-mario-1", nombre: "Juan Pérez García", celular: "946131777", depto_id: "prop-mario-1", garantia_monto: 1200, moto_info: { placa: "ABC-123", monto_asociacion: 50 }, documentos: { dni_url: "", contrato_url: "" } },
-          { id: "inq-mario-2", nombre: "María López Rodríguez", celular: "912345678", depto_id: "prop-mario-2", garantia_monto: 900, moto_info: { placa: "", monto_asociacion: 0 }, documentos: { dni_url: "", contrato_url: "" } },
-          { id: "inq-mario-3", nombre: "Pedro Alcántara Vega", celular: "988888888", depto_id: "prop-mario-3", garantia_monto: 1300, moto_info: { placa: "XYZ-789", monto_asociacion: 40 }, documentos: { dni_url: "", contrato_url: "" } }
-        ];
+        // Intentar cargar de localStorage primero
+        const savedInqs = localStorage.getItem(`demo_inquilinos_${adminId}`);
+        let demoInqs = [];
+
+        if (savedInqs) {
+          demoInqs = JSON.parse(savedInqs);
+        } else {
+          // Semillas por defecto si no hay nada guardado
+          let defaultInqs = [
+            { id: "inq-mario-1", nombre: "Juan Pérez García", celular: "946131777", depto_id: "prop-mario-1", garantia_monto: 1200, moto_info: { placa: "ABC-123", monto_asociacion: 50 }, documentos: { dni_url: "", contrato_url: "", historial: [] } },
+            { id: "inq-mario-2", nombre: "María López Rodríguez", celular: "912345678", depto_id: "prop-mario-2", garantia_monto: 900, moto_info: { placa: "", monto_asociacion: 0 }, documentos: { dni_url: "", contrato_url: "", historial: [] } },
+            { id: "inq-mario-3", nombre: "Pedro Alcántara Vega", celular: "988888888", depto_id: "prop-mario-3", garantia_monto: 1300, moto_info: { placa: "XYZ-789", monto_asociacion: 40 }, documentos: { dni_url: "", contrato_url: "", historial: [] } }
+          ];
+
+          if (adminId === "demo-sofia") {
+            defaultInqs = [
+              { id: "inq-sofia-1", nombre: "Carlos Fuentes Romero", celular: "999111222", depto_id: "prop-sofia-1", garantia_monto: 1000, moto_info: { placa: "", monto_asociacion: 0 }, documentos: { dni_url: "", contrato_url: "", historial: [] } },
+              { id: "inq-sofia-2", nombre: "Ana Gómez Solís", celular: "999333444", depto_id: "prop-sofia-2", garantia_monto: 850, moto_info: { placa: "MNO-456", monto_asociacion: 30 }, documentos: { dni_url: "", contrato_url: "", historial: [] } },
+              { id: "inq-sofia-3", nombre: "Roberto Díaz Canseco", celular: "999555666", depto_id: "prop-sofia-3", garantia_monto: 1100, moto_info: { placa: "", monto_asociacion: 0 }, documentos: { dni_url: "", contrato_url: "", historial: [] } },
+              { id: "inq-sofia-4", nombre: "Lucía Mendez Castro", celular: "999777888", depto_id: "prop-sofia-4", garantia_monto: 950, moto_info: { placa: "789-DEF", monto_asociacion: 45 }, documentos: { dni_url: "", contrato_url: "", historial: [] } }
+            ];
+          } else if (adminId === "demo-carlos") {
+            defaultInqs = [
+              { id: "inq-carlos-1", nombre: "Boutique Bella S.A.C.", celular: "987111111", depto_id: "prop-carlos-1", garantia_monto: 2500, moto_info: { placa: "", monto_asociacion: 0 }, documentos: { dni_url: "", contrato_url: "", historial: [] } },
+              { id: "inq-carlos-2", nombre: "Farmacia FarmaVida", celular: "987222222", depto_id: "prop-carlos-2", garantia_monto: 3000, moto_info: { placa: "F-4563", monto_asociacion: 60 }, documentos: { dni_url: "", contrato_url: "", historial: [] } },
+              { id: "inq-carlos-3", nombre: "Consultorio Dental Luz", celular: "987333333", depto_id: "prop-carlos-3", garantia_monto: 1800, moto_info: { placa: "", monto_asociacion: 0 }, documentos: { dni_url: "", contrato_url: "", historial: [] } }
+            ];
+          }
+          demoInqs = defaultInqs;
+          localStorage.setItem(`demo_inquilinos_${adminId}`, JSON.stringify(defaultInqs));
+        }
 
         let demoDeptos = [
           { id: "prop-mario-1", identificador: "Depto 2A", precio_alquiler: 1200 },
           { id: "prop-mario-2", identificador: "Depto 2B", precio_alquiler: 900 },
           { id: "prop-mario-3", identificador: "Depto 3A", precio_alquiler: 1300 }
         ];
-
         if (adminId === "demo-sofia") {
-          demoInqs = [
-            { id: "inq-sofia-1", nombre: "Carlos Fuentes Romero", celular: "999111222", depto_id: "prop-sofia-1", garantia_monto: 1000, moto_info: { placa: "", monto_asociacion: 0 }, documentos: { dni_url: "", contrato_url: "" } },
-            { id: "inq-sofia-2", nombre: "Ana Gómez Solís", celular: "999333444", depto_id: "prop-sofia-2", garantia_monto: 850, moto_info: { placa: "MNO-456", monto_asociacion: 30 }, documentos: { dni_url: "", contrato_url: "" } },
-            { id: "inq-sofia-3", nombre: "Roberto Díaz Canseco", celular: "999555666", depto_id: "prop-sofia-3", garantia_monto: 1100, moto_info: { placa: "", monto_asociacion: 0 }, documentos: { dni_url: "", contrato_url: "" } },
-            { id: "inq-sofia-4", nombre: "Lucía Mendez Castro", celular: "999777888", depto_id: "prop-sofia-4", garantia_monto: 950, moto_info: { placa: "789-DEF", monto_asociacion: 45 }, documentos: { dni_url: "", contrato_url: "" } }
-          ];
-
           demoDeptos = [
             { id: "prop-sofia-1", identificador: "Depto 101", precio_alquiler: 1000 },
             { id: "prop-sofia-2", identificador: "Depto 102", precio_alquiler: 850 },
@@ -186,12 +303,6 @@ export default function Inquilinos({ sesion }) {
             { id: "prop-sofia-4", identificador: "Depto 202", precio_alquiler: 950 }
           ];
         } else if (adminId === "demo-carlos") {
-          demoInqs = [
-            { id: "inq-carlos-1", nombre: "Boutique Bella S.A.C.", celular: "987111111", depto_id: "prop-carlos-1", garantia_monto: 2500, moto_info: { placa: "", monto_asociacion: 0 }, documentos: { dni_url: "", contrato_url: "" } },
-            { id: "inq-carlos-2", nombre: "Farmacia FarmaVida", celular: "987222222", depto_id: "prop-carlos-2", garantia_monto: 3000, moto_info: { placa: "F-4563", monto_asociacion: 60 }, documentos: { dni_url: "", contrato_url: "" } },
-            { id: "inq-carlos-3", nombre: "Consultorio Dental Luz", celular: "987333333", depto_id: "prop-carlos-3", garantia_monto: 1800, moto_info: { placa: "", monto_asociacion: 0 }, documentos: { dni_url: "", contrato_url: "" } }
-          ];
-
           demoDeptos = [
             { id: "prop-carlos-1", identificador: "Local A", precio_alquiler: 2500 },
             { id: "prop-carlos-2", identificador: "Local B", precio_alquiler: 3000 },
@@ -303,11 +414,23 @@ export default function Inquilinos({ sesion }) {
         ...payload
       };
 
+      let updatedList = [];
       if (inqAEditar) {
-        setListaInquilinos(prev => prev.map(i => i.id === inqAEditar.id ? nuevoInq : i));
+        updatedList = listaInquilinos.map(i => i.id === inqAEditar.id ? nuevoInq : i);
       } else {
-        setListaInquilinos(prev => [...prev, nuevoInq]);
+        updatedList = [...listaInquilinos, nuevoInq];
       }
+
+      setListaInquilinos(updatedList);
+      localStorage.setItem(`demo_inquilinos_${adminId}`, JSON.stringify(updatedList));
+
+      await registrarLogSistema(adminId, {
+        accion: inqAEditar ? "MODIFICAR_INQUILINO" : "CREAR_INQUILINO",
+        descripcion: inqAEditar
+          ? `Se modificaron los datos del inquilino "${payload.nombre}" (Demo)`
+          : `Se registró al inquilino "${payload.nombre}" (Demo)`,
+        detalles: { nombre: payload.nombre, id: nuevoInq.id }
+      });
 
       setMostrarModal(false);
       setGuardando(false);
@@ -321,11 +444,21 @@ export default function Inquilinos({ sesion }) {
           .update(payload)
           .eq("id", inqAEditar.id);
         if (error) throw error;
+        await registrarLogSistema(adminId, {
+          accion: "MODIFICAR_INQUILINO",
+          descripcion: `Se modificaron los datos del inquilino "${payload.nombre}"`,
+          detalles: { nombre: payload.nombre, id: inqAEditar.id }
+        });
       } else {
         const { error } = await clienteSupabase
           .from("inquilinos")
           .insert([payload]);
         if (error) throw error;
+        await registrarLogSistema(adminId, {
+          accion: "CREAR_INQUILINO",
+          descripcion: `Se registró al inquilino "${payload.nombre}"`,
+          detalles: { nombre: payload.nombre }
+        });
       }
 
       setMostrarModal(false);
@@ -341,7 +474,15 @@ export default function Inquilinos({ sesion }) {
   const eliminarInquilino = async (id, nombreInq) => {
     if (window.confirm(`¿Confirmas que deseas retirar al inquilino "${nombreInq}"?`)) {
       if (adminId.startsWith("demo-") || adminId === "admin-prueba-id") {
-        setListaInquilinos(prev => prev.filter(i => i.id !== id));
+        const updatedList = listaInquilinos.filter(i => i.id !== id);
+        setListaInquilinos(updatedList);
+        localStorage.setItem(`demo_inquilinos_${adminId}`, JSON.stringify(updatedList));
+        
+        await registrarLogSistema(adminId, {
+          accion: "ELIMINAR_INQUILINO",
+          descripcion: `Se retiró/eliminó al inquilino "${nombreInq}" (Demo)`,
+          detalles: { id }
+        });
         return;
       }
 
@@ -351,6 +492,12 @@ export default function Inquilinos({ sesion }) {
           .delete()
           .eq("id", id);
         if (error) throw error;
+        
+        await registrarLogSistema(adminId, {
+          accion: "ELIMINAR_INQUILINO",
+          descripcion: `Se retiró/eliminó al inquilino "${nombreInq}"`,
+          detalles: { id }
+        });
         await cargarDatos();
       } catch (err) {
         console.error("Error al eliminar inquilino:", err);
