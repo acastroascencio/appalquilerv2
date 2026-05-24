@@ -534,4 +534,6 @@ export default function DocumentUploadBox({ inquilino }) {
           </div>
         </div>
       )}
-    </div>);
+    </div>
+  );
+}
