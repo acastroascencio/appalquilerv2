@@ -1,0 +1,16 @@
+{
+  "short_name": "AlquilerApp",
+  "name": "AlquilerApp - Gestión de Inmuebles",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    }
+  ],
+  "start_url": ".",
+  "background_color": "#F9FAFB",
+  "theme_color": "#020617",
+  "display": "standalone",
+  "orientation": "portrait"
+}
