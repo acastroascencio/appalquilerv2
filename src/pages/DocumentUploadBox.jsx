@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useApp } from "../context/AppContext";
 import { 
   FileText, 
@@ -13,15 +13,24 @@ import {
 } from "lucide-react";
 
 // Extensiones permitidas por los requerimientos
-const ALLOWED_EXTENSIONS = ["docx", "doc", "pdf", "png", "jpg", "jpj", "jpeg"];
+const ALLOWED_EXTENSIONS = ["docx", "doc", "pdf", "png", "jpg", "jpeg"];
 
 export default function DocumentUploadBox({ inquilino }) {
   const { saveInquilino } = useApp();
   const [loadingType, setLoadingType] = useState(null); // 'dni' o 'contrato'
   
+  // Evitar Memory Leak en desmontado
+  const isMounted = useRef(true);
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
   // Estados para Modal de Confirmación de Carga
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [pendingUpload, setPendingUpload] = useState(null); // { file, type }
+  const [pendingUpload, setPendingUpload] = useState(null); // { file, type, input }
 
   // Estados para Modal de Previsualización
   const [showPreviewModal, setShowPreviewModal] = useState(false);
@@ -32,13 +41,13 @@ export default function DocumentUploadBox({ inquilino }) {
     if (!file) return false;
     const ext = file.name.split('.').pop().toLowerCase();
     if (!ALLOWED_EXTENSIONS.includes(ext)) {
-      alert(`Formato de archivo no permitido.\nSolo se aceptan: .docx, .doc, .pdf, .png, .jpg, .jpj, .jpeg`);
+      alert(`Formato de archivo no permitido.\nSolo se aceptan: .docx, .doc, .pdf, .png, .jpg, .jpeg`);
       return false;
     }
     return true;
   };
 
-  // Manejo de la selección de archivo
+  // Manejo de la selección de archivo (Bug de Limpieza resuelto con guardado de ref)
   const handleFileChange = (e, type) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -51,24 +60,23 @@ export default function DocumentUploadBox({ inquilino }) {
     const currentUrl = inquilino.documentos?.[`${type}_url`];
     if (currentUrl) {
       // Requerimiento 2: Confirmación si ya existe un archivo
-      setPendingUpload({ file, type });
+      setPendingUpload({ file, type, input: e.target });
       setShowConfirmModal(true);
     } else {
       // Si no existe, cargar directamente
-      processUpload(file, type);
+      processUpload(file, type, e.target);
     }
-    e.target.value = ""; // Reiniciar input
   };
 
   // Procesamiento y guardado de archivo en el Historial y como Activo
-  const processUpload = (file, type) => {
+  const processUpload = (file, type, inputElement) => {
     setLoadingType(type);
     const reader = new FileReader();
     reader.onloadend = async () => {
       try {
         const timestamp = new Date().toISOString();
         const newRecord = {
-          id: `doc-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          id: `doc-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`, // Estándar moderno slice
           tipo: type,
           nombre: file.name,
           url: reader.result,
@@ -87,13 +95,22 @@ export default function DocumentUploadBox({ inquilino }) {
           documentos: updatedDocs
         });
         
-        alert(`Documento ${type.toUpperCase()} cargado y registrado en el historial.`);
+        if (isMounted.current) {
+          alert(`Documento ${type.toUpperCase()} cargado y registrado en el historial.`);
+        }
       } catch (error) {
         console.error("Error al subir archivo:", error);
-        alert("Ocurrió un error al subir.");
+        if (isMounted.current) {
+          alert("Ocurrió un error al subir.");
+        }
       } finally {
-        setLoadingType(null);
-        setPendingUpload(null);
+        if (isMounted.current) {
+          setLoadingType(null);
+          setPendingUpload(null);
+        }
+        if (inputElement) {
+          inputElement.value = ""; // Reiniciar input después del flujo asíncrono
+        }
       }
     };
     reader.readAsDataURL(file);
@@ -102,13 +119,16 @@ export default function DocumentUploadBox({ inquilino }) {
   // Confirmación desde el Modal
   const handleConfirmUpload = () => {
     if (pendingUpload) {
-      processUpload(pendingUpload.file, pendingUpload.type);
+      processUpload(pendingUpload.file, pendingUpload.type, pendingUpload.input);
     }
     setShowConfirmModal(false);
   };
 
   // Cancelación desde el Modal
   const handleCancelUpload = () => {
+    if (pendingUpload && pendingUpload.input) {
+      pendingUpload.input.value = "";
+    }
     setPendingUpload(null);
     setShowConfirmModal(false);
   };
@@ -176,7 +196,7 @@ export default function DocumentUploadBox({ inquilino }) {
   const getFileCategory = (fileName, url) => {
     if (!fileName) return "unknown";
     const ext = fileName.split('.').pop().toLowerCase();
-    if (["png", "jpg", "jpeg", "jpj"].includes(ext) || url?.startsWith("data:image/")) {
+    if (["png", "jpg", "jpeg"].includes(ext) || url?.startsWith("data:image/")) {
       return "image";
     }
     if (ext === "pdf" || url?.startsWith("data:application/pdf")) {
@@ -233,7 +253,7 @@ export default function DocumentUploadBox({ inquilino }) {
           <input 
             type="file" 
             className="absolute inset-0 opacity-0 cursor-pointer z-10" 
-            accept=".docx,.doc,.pdf,.png,.jpg,.jpj,.jpeg"
+            accept=".docx,.doc,.pdf,.png,.jpg,.jpeg"
             onChange={(e) => handleFileChange(e, type)}
             disabled={isUploading}
           />
@@ -433,11 +453,25 @@ export default function DocumentUploadBox({ inquilino }) {
               )}
 
               {getFileCategory(previewDoc.nombre, previewDoc.url) === "pdf" && (
-                <iframe 
-                  src={previewDoc.url} 
-                  title="PDF Document Preview"
-                  className="w-full h-[55vh] rounded-md shadow-inner border border-slate-300"
-                />
+                <div className="text-center p-8 bg-white border border-slate-200 rounded-lg shadow-sm max-w-md space-y-4">
+                  <div className="h-16 w-16 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto border border-red-100 shadow-sm">
+                    <FileText className="h-8 w-8" />
+                  </div>
+                  <div>
+                    <h5 className="font-extrabold text-slate-800 text-sm">Documento PDF Listo</h5>
+                    <p className="text-xs font-semibold text-slate-400 mt-2 leading-relaxed">
+                      El archivo PDF se ha cargado correctamente y está listo para su visualización. Por motivos de compatibilidad de seguridad en tu navegador, haz clic abajo para abrir o descargar el documento de forma segura.
+                    </p>
+                  </div>
+                  <a
+                    href={previewDoc.url}
+                    download={previewDoc.nombre}
+                    className="inline-flex items-center gap-2 py-2 px-5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-bold transition-all shadow-md shadow-blue-500/10 hover:shadow-lg"
+                  >
+                    <Download className="h-4 w-4" />
+                    <span>Ver / Descargar PDF</span>
+                  </a>
+                </div>
               )}
 
               {getFileCategory(previewDoc.nombre, previewDoc.url) === "word" && (
