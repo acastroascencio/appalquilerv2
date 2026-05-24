@@ -3,6 +3,8 @@ import { clienteSupabase } from "./config/supabase";
 import Login from "./components/Login";
 import BottomNav from "./components/BottomNav";
 import Inicio from "./components/Inicio";
+import Consumo from "./components/Consumo";
+import Inquilinos from "./components/Inquilinos";
 import Departamentos from "./components/Departamentos";
 import MiCuenta from "./components/MiCuenta";
 import { Building, Zap, User } from "lucide-react";
@@ -10,7 +12,7 @@ import { Building, Zap, User } from "lucide-react";
 export default function App() {
   const [sesionActiva, setSesionActiva] = useState(null);
   const [cargandoSesion, setCargandoSesion] = useState(true);
-  const [paginaActiva, setPaginaActiva] = useState("inicio"); // inicio, departamentos, cuenta
+  const [paginaActiva, setPaginaActiva] = useState("inicio"); // inicio, consumo, inquilinos, departamentos, cuenta
 
   useEffect(() => {
     // 1. Validar si hay una sesión activa al cargar
@@ -70,6 +72,10 @@ export default function App() {
     switch (paginaActiva) {
       case "inicio":
         return <Inicio sesion={sesionActiva} />;
+      case "consumo":
+        return <Consumo sesion={sesionActiva} />;
+      case "inquilinos":
+        return <Inquilinos sesion={sesionActiva} />;
       case "departamentos":
         return <Departamentos sesion={sesionActiva} />;
       case "cuenta":
@@ -82,6 +88,8 @@ export default function App() {
   const obtenerTituloCabecera = () => {
     switch (paginaActiva) {
       case "inicio": return "Panel de Inicio";
+      case "consumo": return "Registrar Consumo";
+      case "inquilinos": return "Tus Inquilinos";
       case "departamentos": return "Tus Inmuebles";
       case "cuenta": return "Ajustes de Cobro";
       default: return "AlquilerApp";

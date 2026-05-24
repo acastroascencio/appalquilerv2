@@ -1,9 +1,11 @@
 import React from "react";
-import { Home, Building, User } from "lucide-react";
+import { Home, Zap, Users, Building, User } from "lucide-react";
 
 export default function BottomNav({ paginaActiva, setPaginaActiva }) {
   const itemsMenu = [
     { id: "inicio", label: "Inicio", icon: Home },
+    { id: "consumo", label: "Consumo", icon: Zap },
+    { id: "inquilinos", label: "Inquilinos", icon: Users },
     { id: "departamentos", label: "Departamentos", icon: Building },
     { id: "cuenta", label: "Mi Cuenta", icon: User },
   ];
