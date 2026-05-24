@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { clienteSupabase } from "../config/supabase";
 import { 
   PlusCircle, Users, X, Phone, Building, Car, Trash2, Edit, 
-  AlertCircle, FileText, Upload, Calendar, AlertTriangle, Download 
+  AlertCircle, FileText, Upload, Calendar, AlertTriangle, Download, Eye 
 } from "lucide-react";
 
 export default function Inquilinos({ sesion }) {
