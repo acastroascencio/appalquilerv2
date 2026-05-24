@@ -30,7 +30,19 @@ const obtenerClienteSupabaseSeguro = () => {
     }
   }
 
-  // Cliente de imitación (Mock) robusto para evitar que la aplicación web se caiga
+  // Proxy dinámico robusto de última generación para evitar que la aplicación web se caiga ante cualquier encadenamiento de métodos
+  const manejadorProxy = {
+    get(target, propiedad) {
+      if (propiedad === "then") {
+        return (resolve) => resolve({ data: [], error: null });
+      }
+      if (typeof propiedad === "string") {
+        return () => new Proxy({}, manejadorProxy);
+      }
+      return target[propiedad];
+    }
+  };
+
   return {
     auth: {
       getSession: async () => ({ data: { session: null }, error: null }),
@@ -38,26 +50,7 @@ const obtenerClienteSupabaseSeguro = () => {
       signOut: async () => ({ error: null }),
       onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
     },
-    from: () => ({
-      select: () => ({
-        eq: () => ({
-          single: async () => ({ data: null, error: null }),
-          order: async () => ({ data: [], error: null }),
-          limit: async () => ({ data: [], error: null }),
-          then: (cb) => cb({ data: [], error: null })
-        }),
-        single: async () => ({ data: null, error: null }),
-        then: (cb) => cb({ data: [], error: null })
-      }),
-      insert: async () => ({ data: [], error: null }),
-      update: () => ({
-        eq: async () => ({ data: [], error: null })
-      }),
-      upsert: async () => ({ data: [], error: null }),
-      delete: () => ({
-        eq: async () => ({ data: [], error: null })
-      })
-    })
+    from: () => new Proxy({}, manejadorProxy)
   };
 };
 
