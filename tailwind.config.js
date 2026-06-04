@@ -1,5 +1,8 @@
+import forms from "@tailwindcss/forms";
+
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: "class",
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -8,23 +11,21 @@ export default {
     extend: {
       colors: {
         brand: {
-          dark: '#1e293b',    // Fondo lateral, cabeceras (Slate 800)
-          light: '#f8fafc',   // Fondo general de la app (Slate 50)
-          border: '#e2e8f0',  // Bordes de tarjetas (Slate 200)
+          dark: "#1e293b",
+          light: "#f8fafc",
+          border: "#e2e8f0",
         },
         status: {
-          success: '#10b981', // Verde para Pagado / Ingresos
-          danger: '#ef4444',  // Rojo para Deudas / Alertas
-          warning: '#f59e0b', // Ámbar para Vehículos / Info externa
-          info: '#3b82f6',    // Azul para botones primarios
+          success: "#10b981",
+          danger: "#ef4444",
+          warning: "#f59e0b",
+          info: "#3b82f6",
         }
       },
       fontFamily: {
-        sans: ['Inter', 'Segoe UI', 'Roboto', 'sans-serif'],
+        sans: ["Inter", "Segoe UI", "Roboto", "sans-serif"],
       }
     },
   },
-  plugins: [
-    require('@tailwindcss/forms'), // Recomendado para los inputs y checkboxes
-  ],
-}
+  plugins: [forms],
+};

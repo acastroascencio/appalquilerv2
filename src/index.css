@@ -5,30 +5,105 @@
 @layer base {
   :root {
     color-scheme: light;
-    --app-bg: oklch(0.982 0.006 220);
-    --surface: oklch(0.996 0.004 220);
-    --surface-muted: oklch(0.958 0.01 220);
-    --text-strong: oklch(0.225 0.035 245);
-    --text: oklch(0.37 0.035 245);
-    --text-soft: oklch(0.55 0.03 245);
-    --border: oklch(0.885 0.018 230);
-    --primary: oklch(0.55 0.18 255);
-    --primary-strong: oklch(0.47 0.19 255);
-    --success: oklch(0.62 0.16 155);
-    --warning: oklch(0.72 0.16 72);
-    --danger: oklch(0.58 0.2 28);
-    --info: oklch(0.62 0.15 232);
+    --background: #f8fafc;
+    --background-secondary: #f1f5f9;
+    --surface: #ffffff;
+    --surface-elevated: #ffffff;
+    --surface-muted: #f8fafc;
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --primary-soft: #dbeafe;
+    --secondary: #334155;
+    --success: #16a34a;
+    --success-soft: #dcfce7;
+    --success-on-soft: #14532d;
+    --warning: #d97706;
+    --warning-soft: #fef3c7;
+    --warning-on-soft: #713f12;
+    --danger: #dc2626;
+    --danger-soft: #fee2e2;
+    --danger-on-soft: #7f1d1d;
+    --info: #2563eb;
+    --info-soft: #dbeafe;
+    --info-on-soft: #1e3a8a;
+    --text-primary: #0f172a;
+    --text-secondary: #334155;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+    --border-strong: #cbd5e1;
+    --input-background: #ffffff;
+    --button-primary: #2563eb;
+    --button-secondary: #ffffff;
+    --button-danger: #dc2626;
+    --button-ghost: transparent;
+    --navigation-background: #ffffff;
+    --card-background: #ffffff;
+    --modal-background: #ffffff;
+    --app-bg: var(--background);
+    --text-strong: var(--text-primary);
+    --text: var(--text-secondary);
+    --text-soft: var(--text-muted);
+  }
+
+  .dark {
+    color-scheme: dark;
+    --background: #0f172a;
+    --background-secondary: #111827;
+    --surface: #1e293b;
+    --surface-elevated: #263449;
+    --surface-muted: #111827;
+    --primary: #3b82f6;
+    --primary-hover: #2563eb;
+    --primary-soft: rgb(29 78 216 / 0.2);
+    --secondary: #cbd5e1;
+    --success: #22c55e;
+    --success-soft: #dcfce7;
+    --success-on-soft: #14532d;
+    --warning: #facc15;
+    --warning-soft: #fef3c7;
+    --warning-on-soft: #713f12;
+    --danger: #ef4444;
+    --danger-soft: #fee2e2;
+    --danger-on-soft: #7f1d1d;
+    --info: #3b82f6;
+    --info-soft: rgb(59 130 246 / 0.18);
+    --info-on-soft: #dbeafe;
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --border: #334155;
+    --border-strong: #475569;
+    --input-background: #111827;
+    --button-primary: #3b82f6;
+    --button-secondary: #1e293b;
+    --button-danger: #ef4444;
+    --button-ghost: transparent;
+    --navigation-background: #020617;
+    --card-background: #1e293b;
+    --modal-background: #1e293b;
+    --app-bg: var(--background);
+    --text-strong: var(--text-primary);
+    --text: var(--text-secondary);
+    --text-soft: var(--text-muted);
   }
 
   html {
     font-size: 18px;
+    overflow-x: hidden;
   }
 
   body {
     background:
-      radial-gradient(circle at top left, oklch(0.94 0.035 235), transparent 34rem),
-      linear-gradient(180deg, oklch(0.982 0.006 220), oklch(0.955 0.012 230));
-    @apply min-h-screen text-slate-800 antialiased;
+      radial-gradient(circle at top left, color-mix(in srgb, var(--primary-soft) 80%, transparent), transparent 34rem),
+      linear-gradient(180deg, var(--background), var(--background-secondary));
+    color: var(--text-secondary);
+    @apply min-h-screen overflow-x-hidden antialiased;
+  }
+
+  .dark body {
+    background:
+      radial-gradient(circle at top left, rgb(59 130 246 / 0.12), transparent 34rem),
+      linear-gradient(180deg, var(--background), var(--background-secondary));
   }
 
   button,
@@ -36,29 +111,43 @@
   input,
   select,
   textarea {
-    @apply focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50;
+    @apply focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 dark:focus-visible:ring-blue-400/40 dark:focus-visible:ring-offset-slate-950;
   }
 }
 
 @layer components {
+  .app-surface {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text-primary);
+  }
+
+  .app-surface-elevated {
+    background: var(--surface-elevated);
+    border-color: var(--border-strong);
+    color: var(--text-primary);
+  }
+
   .card-container {
-    @apply rounded-xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/60 transition-all duration-200;
+    @apply rounded-xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/60 transition-all duration-200 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none;
   }
   
   .surface-panel {
-    @apply rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-200/60;
+    @apply rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-200/60 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none;
   }
 
   .section-heading {
-    @apply text-lg sm:text-xl font-extrabold tracking-tight text-slate-950;
+    @apply text-lg sm:text-xl font-extrabold tracking-tight text-slate-950 dark:text-slate-50;
   }
 
   .section-subtitle {
-    @apply text-sm sm:text-base font-semibold text-slate-500 leading-relaxed;
+    @apply text-sm sm:text-base font-semibold text-slate-500 leading-relaxed dark:text-slate-300;
   }
 
   .btn-primary {
-    @apply min-h-12 rounded-xl bg-blue-700 px-5 py-3 font-extrabold text-white shadow-sm shadow-blue-900/10 transition-colors duration-200 flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-600 disabled:shadow-none hover:bg-blue-800;
+    background: var(--button-primary);
+    color: #ffffff;
+    @apply min-h-12 rounded-xl px-5 py-3 text-base font-extrabold shadow-sm shadow-blue-900/10 transition-colors duration-200 flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-600 disabled:shadow-none hover:brightness-95;
   }
   
   .btn-whatsapp {
@@ -66,27 +155,32 @@
   }
 
   .btn-secondary {
-    @apply min-h-12 rounded-xl border border-slate-200 bg-white px-5 py-3 font-extrabold text-slate-800 shadow-sm shadow-slate-200/50 transition-colors duration-200 flex items-center justify-center gap-2 hover:bg-slate-100;
+    background: var(--button-secondary);
+    border-color: var(--border-strong);
+    color: var(--text-primary);
+    @apply min-h-12 rounded-xl border px-5 py-3 text-base font-extrabold shadow-sm shadow-slate-200/50 transition-colors duration-200 flex items-center justify-center gap-2 hover:brightness-95 dark:shadow-none;
   }
 
   .btn-danger {
-    @apply min-h-12 rounded-xl bg-red-600 px-5 py-3 font-extrabold text-white shadow-sm shadow-red-900/10 transition-colors duration-200 flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-600 disabled:shadow-none hover:bg-red-700;
+    background: var(--button-danger);
+    color: #ffffff;
+    @apply min-h-12 rounded-xl px-5 py-3 text-base font-extrabold shadow-sm shadow-red-900/10 transition-colors duration-200 flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-600 disabled:shadow-none hover:brightness-95;
   }
 
   .input-field {
-    @apply mt-1 block w-full min-h-12 rounded-xl border-slate-300 bg-white px-4 py-3 text-base font-semibold text-slate-800 shadow-sm transition-colors placeholder:text-slate-400 focus:border-blue-700 focus:ring focus:ring-blue-200;
+    @apply mt-1 block w-full min-h-12 rounded-xl border-slate-300 bg-white px-4 py-3 text-base font-semibold text-slate-800 shadow-sm transition-colors placeholder:text-slate-400 focus:border-blue-700 focus:ring focus:ring-blue-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-blue-400 dark:focus:ring-blue-400/30;
   }
 
   .field-icon {
-    @apply pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400;
+    @apply pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 dark:text-slate-500;
   }
 
   .label-text {
-    @apply block text-sm sm:text-base font-extrabold text-slate-700 mb-1.5;
+    @apply block text-sm sm:text-base font-extrabold text-slate-700 mb-1.5 dark:text-slate-200;
   }
 
   .helper-text {
-    @apply mt-1.5 block text-sm font-semibold text-slate-500;
+    @apply mt-1.5 block text-sm font-semibold text-slate-500 dark:text-slate-400;
   }
 
   .field-error {
@@ -98,31 +192,132 @@
   }
 
   .app-alert-error {
-    @apply app-alert border-red-200 bg-red-50 text-red-950;
+    @apply app-alert border-red-200 bg-red-50 text-red-950 dark:border-red-900/70 dark:bg-red-950/40 dark:text-red-100;
   }
 
   .app-alert-success {
-    @apply app-alert border-emerald-200 bg-emerald-50 text-emerald-950;
+    @apply app-alert border-emerald-200 bg-emerald-50 text-emerald-950 dark:border-emerald-900/70 dark:bg-emerald-950/40 dark:text-emerald-100;
   }
 
   .app-alert-warning {
-    @apply app-alert border-amber-200 bg-amber-50 text-amber-950;
+    @apply app-alert border-amber-200 bg-amber-50 text-amber-950 dark:border-amber-900/70 dark:bg-amber-950/40 dark:text-amber-100;
   }
 
   .badge-success {
-    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-900 border border-emerald-200;
+    background: var(--success-soft);
+    color: var(--success-on-soft);
+    border-color: color-mix(in srgb, var(--success) 36%, transparent);
+    @apply inline-flex items-center px-3 py-1 rounded-full text-[15px] font-extrabold border;
   }
   
   .badge-danger {
-    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-extrabold bg-red-100 text-red-900 border border-red-200;
+    background: var(--danger-soft);
+    color: var(--danger-on-soft);
+    border-color: color-mix(in srgb, var(--danger) 38%, transparent);
+    @apply inline-flex items-center px-3 py-1 rounded-full text-[15px] font-extrabold border;
   }
 
   .badge-warning {
-    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-extrabold bg-amber-100 text-amber-900 border border-amber-200;
+    background: var(--warning-soft);
+    color: var(--warning-on-soft);
+    border-color: color-mix(in srgb, var(--warning) 42%, transparent);
+    @apply inline-flex items-center px-3 py-1 rounded-full text-[15px] font-extrabold border;
   }
 
   .mobile-record-card {
-    @apply rounded-xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/60 space-y-3;
+    @apply rounded-xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/60 space-y-3 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none;
+  }
+
+  .status-badge {
+    @apply inline-flex min-h-8 items-center gap-1.5 rounded-full border px-3 py-1 text-[15px] font-extrabold leading-none;
+  }
+
+  .status-badge-success {
+    background: var(--success-soft);
+    border-color: color-mix(in srgb, var(--success) 36%, transparent);
+    color: var(--success-on-soft);
+  }
+
+  .status-badge-warning {
+    background: var(--warning-soft);
+    border-color: color-mix(in srgb, var(--warning) 42%, transparent);
+    color: var(--warning-on-soft);
+  }
+
+  .status-badge-danger {
+    background: var(--danger-soft);
+    border-color: color-mix(in srgb, var(--danger) 38%, transparent);
+    color: var(--danger-on-soft);
+  }
+
+  .status-badge-info {
+    background: var(--info-soft);
+    border-color: color-mix(in srgb, var(--info) 38%, transparent);
+    color: var(--info-on-soft);
+  }
+
+  .status-badge-neutral {
+    background: var(--surface-muted);
+    border-color: var(--border-strong);
+    color: var(--text-secondary);
+  }
+
+  .depto-card {
+    background: var(--card-background);
+    border-color: var(--border);
+    color: var(--text-primary);
+    @apply relative flex flex-col justify-between overflow-hidden rounded-xl border p-5 shadow-sm transition-all duration-200 dark:shadow-none;
+  }
+
+  .depto-card:hover {
+    border-color: var(--border-strong);
+  }
+
+  .depto-media {
+    background:
+      radial-gradient(circle at 25% 15%, color-mix(in srgb, var(--primary) 20%, transparent), transparent 12rem),
+      linear-gradient(135deg, var(--surface-elevated), var(--surface-muted));
+    color: var(--text-secondary);
+    @apply relative -mx-5 -mt-5 mb-4 flex h-40 items-center justify-center overflow-hidden;
+  }
+
+  .tenant-panel {
+    background: var(--surface-muted);
+    border-color: var(--border);
+    color: var(--text-primary);
+    @apply rounded-lg border p-3;
+  }
+
+  .dark .tenant-panel {
+    background: #1e293b;
+    border-color: #334155;
+  }
+
+  .tenant-view-button {
+    background: var(--success-soft);
+    color: var(--success-on-soft);
+    @apply inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg border border-emerald-200 p-2 font-extrabold transition-colors hover:brightness-95;
+  }
+
+  .action-button-secondary {
+    background: var(--button-secondary);
+    border-color: var(--border-strong);
+    color: var(--text-primary);
+    @apply flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-base font-extrabold transition-colors hover:brightness-95;
+  }
+
+  .action-button-danger {
+    background: transparent;
+    border-color: color-mix(in srgb, var(--danger) 55%, transparent);
+    color: var(--danger);
+    @apply flex min-h-11 items-center justify-center rounded-lg border px-3 py-2 transition-all duration-150 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-35 dark:hover:bg-red-950/30;
+  }
+}
+
+@layer utilities {
+  .app-no-horizontal-scroll {
+    max-width: 100%;
+    overflow-x: hidden;
   }
 }
 
@@ -139,4 +334,36 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.dark .bg-white {
+  background-color: oklch(0.235 0.024 235);
+}
+
+.dark .bg-slate-50,
+.dark .bg-slate-100 {
+  background-color: oklch(0.29 0.025 235);
+}
+
+.dark .text-slate-950,
+.dark .text-slate-900,
+.dark .text-slate-800,
+.dark .text-slate-700 {
+  color: oklch(0.94 0.01 230);
+}
+
+.dark .text-slate-600,
+.dark .text-slate-500,
+.dark .text-slate-400 {
+  color: oklch(0.72 0.014 230);
+}
+
+.dark .border-slate-100,
+.dark .border-slate-200,
+.dark .border-slate-300 {
+  border-color: oklch(0.38 0.026 235);
+}
+
+.dark .divide-slate-50 > :not([hidden]) ~ :not([hidden]) {
+  border-color: oklch(0.34 0.024 235);
 }

@@ -16,7 +16,7 @@ export default function Sidebar() {
     { id: "departamentos", label: "Inmuebles", desktopLabel: "Departamentos", icon: Building2 },
     { id: "inquilinos", label: "Inquilinos", desktopLabel: "Inquilinos", icon: Users },
     { id: "consumo", label: "Consumo", desktopLabel: "Registrar consumo", icon: Zap },
-    { id: "configuracion", label: "Ajustes", desktopLabel: "Configuración", icon: Settings },
+    { id: "configuracion", label: "Ajustes", desktopLabel: "Configuracion", icon: Settings },
   ];
 
   const handleNavigation = (pageId) => {
@@ -34,13 +34,15 @@ export default function Sidebar() {
           key={item.id}
           type="button"
           onClick={() => handleNavigation(item.id)}
-          className={`flex min-h-16 min-w-0 flex-1 flex-col items-center justify-center gap-1.5 rounded-xl px-1 py-2 text-center text-[11px] font-extrabold leading-tight transition-colors ${
-            isActive ? "bg-blue-700 text-white" : "text-slate-500 hover:bg-slate-100"
+          className={`flex min-h-[70px] min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-center text-[12px] font-extrabold leading-tight transition-colors ${
+            isActive
+              ? "bg-blue-700 text-white shadow-sm shadow-blue-950/20 dark:bg-blue-500 dark:text-slate-950"
+              : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
           }`}
           aria-current={isActive ? "page" : undefined}
         >
           <Icon className="h-6 w-6 shrink-0" aria-hidden="true" />
-          <span className="block max-w-full truncate">{item.label}</span>
+          <span className="block max-w-full leading-tight">{item.label}</span>
         </button>
       );
     }
@@ -52,7 +54,7 @@ export default function Sidebar() {
         onClick={() => handleNavigation(item.id)}
         className={`flex min-h-14 w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-base font-extrabold transition-all duration-200 ${
           isActive
-            ? "bg-blue-700 text-white shadow-md shadow-blue-950/20"
+            ? "bg-blue-700 text-white shadow-md shadow-blue-950/20 dark:bg-blue-500 dark:text-slate-950"
             : "text-slate-300 hover:bg-slate-800 hover:text-white"
         }`}
         aria-current={isActive ? "page" : undefined}
@@ -67,16 +69,16 @@ export default function Sidebar() {
     <>
       <aside className="hidden min-h-screen w-72 shrink-0 flex-col bg-slate-950 text-white shadow-xl lg:flex">
         <div className="flex items-center gap-3 border-b border-slate-800 p-6">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-700 text-white shadow-md">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-700 text-white shadow-md dark:bg-blue-500 dark:text-slate-950">
             <Building className="h-6 w-6" aria-hidden="true" />
           </div>
           <div>
             <h1 className="text-lg font-extrabold leading-tight tracking-wide">AlquilerApp</h1>
-            <span className="text-sm font-semibold text-slate-400">Gestión de inmuebles</span>
+            <span className="text-sm font-semibold text-slate-400">Gestion de inmuebles</span>
           </div>
         </div>
 
-        <nav className="flex-1 space-y-2 px-4 py-6" aria-label="Navegación principal">
+        <nav className="flex-1 space-y-2 px-4 py-6" aria-label="Navegacion principal">
           {menuItems.map((item) => renderItem(item, "desktop"))}
         </nav>
 
@@ -86,8 +88,8 @@ export default function Sidebar() {
       </aside>
 
       <nav
-        className="fixed inset-x-0 bottom-0 z-40 grid min-h-[84px] grid-cols-5 gap-1.5 border-t border-slate-200 bg-white/95 px-2 pb-2 pt-2 shadow-2xl backdrop-blur lg:hidden"
-        aria-label="Navegación principal móvil"
+        className="fixed inset-x-0 bottom-0 z-40 grid min-h-[86px] grid-cols-5 gap-1 border-t border-slate-200 bg-white/95 px-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-2 shadow-2xl backdrop-blur dark:border-slate-800 dark:bg-slate-950/95 lg:hidden"
+        aria-label="Navegacion principal movil"
       >
         {menuItems.map((item) => renderItem(item, "mobile"))}
       </nav>

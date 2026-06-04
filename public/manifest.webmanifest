@@ -1,0 +1,20 @@
+{
+  "name": "AlquilerApp",
+  "short_name": "AlquilerApp",
+  "description": "Gestion mobile-first de alquileres, inquilinos, consumos, configuracion y backups.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f8fafc",
+  "theme_color": "#1d4ed8",
+  "categories": ["business", "finance", "productivity"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

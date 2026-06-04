@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { AppProvider, useApp } from "./context/AppContext";
 import AppLayout from "./components/layout/AppLayout";
 import Dashboard from "./pages/Dashboard";
@@ -8,7 +8,7 @@ import RegistroConsumo from "./pages/RegistroConsumo";
 import Configuracion from "./pages/Configuracion";
 import Login from "./pages/Login";
 
-function AppContent({ sesionActiva, cerrarSesion }) {
+function AppContent({ sesionActiva, cerrarSesion, theme, resolvedTheme, onToggleTheme }) {
   const { activePage, loading } = useApp();
   
   if (loading) {
@@ -45,7 +45,13 @@ function AppContent({ sesionActiva, cerrarSesion }) {
   };
 
   return (
-    <AppLayout sesionActiva={sesionActiva} onSignOut={cerrarSesion}>
+    <AppLayout
+      sesionActiva={sesionActiva}
+      onSignOut={cerrarSesion}
+      theme={theme}
+      resolvedTheme={resolvedTheme}
+      onToggleTheme={onToggleTheme}
+    >
       {renderActivePage()}
     </AppLayout>
   );
@@ -54,6 +60,44 @@ function AppContent({ sesionActiva, cerrarSesion }) {
 export default function App() {
   const [sesionActiva, setSesionActiva] = useState(null);
   const [cargandoSesion, setCargandoSesion] = useState(true);
+  const [themePreference, setThemePreference] = useState(() => {
+    const storedTheme = localStorage.getItem("alquiler_web_theme");
+    if (["light", "dark", "system"].includes(storedTheme)) return storedTheme;
+    return "system";
+  });
+  const [systemTheme, setSystemTheme] = useState(() =>
+    window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light"
+  );
+
+  const resolvedTheme = themePreference === "system" ? systemTheme : themePreference;
+
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.toggle("dark", resolvedTheme === "dark");
+    root.dataset.theme = resolvedTheme;
+    root.dataset.themePreference = themePreference;
+    localStorage.setItem("alquiler_web_theme", themePreference);
+  }, [resolvedTheme, themePreference]);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia?.("(prefers-color-scheme: dark)");
+    if (!mediaQuery) return undefined;
+
+    const handleSystemThemeChange = (event) => {
+      setSystemTheme(event.matches ? "dark" : "light");
+    };
+
+    mediaQuery.addEventListener("change", handleSystemThemeChange);
+    return () => mediaQuery.removeEventListener("change", handleSystemThemeChange);
+  }, []);
+
+  const toggleTheme = () => {
+    setThemePreference((currentTheme) => {
+      if (currentTheme === "system") return "light";
+      if (currentTheme === "light") return "dark";
+      return "system";
+    });
+  };
 
   useEffect(() => {
     const storedSession = localStorage.getItem("alquiler_web_session");
@@ -88,12 +132,25 @@ export default function App() {
   }
 
   if (!sesionActiva) {
-    return <Login setSesionActiva={setSesionActiva} />;
+    return (
+      <Login
+        setSesionActiva={setSesionActiva}
+        theme={themePreference}
+        resolvedTheme={resolvedTheme}
+        onToggleTheme={toggleTheme}
+      />
+    );
   }
 
   return (
     <AppProvider>
-      <AppContent sesionActiva={sesionActiva} cerrarSesion={cerrarSesion} />
+      <AppContent
+        sesionActiva={sesionActiva}
+        cerrarSesion={cerrarSesion}
+        theme={themePreference}
+        resolvedTheme={resolvedTheme}
+        onToggleTheme={toggleTheme}
+      />
     </AppProvider>
   );
 }
