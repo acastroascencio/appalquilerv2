@@ -22,9 +22,9 @@ if (isFirebaseConfigured) {
 const SEED_PROPIEDADES = [
   { id: "prop-1", identificador: "2A", estado: true, costo_base: 1200, caracteristicas: { habitaciones: 2, bano_propio: true, cocina: true }, fotos: [] },
   { id: "prop-2", identificador: "2B", estado: true, costo_base: 950, caracteristicas: { habitaciones: 1, bano_propio: true, cocina: true }, fotos: [] },
-  { id: "prop-3", identificador: "3A", estado: true, costo_base: 1300, caracteristicas: { habitaciones: 2, bano_propio: true, cocina: true }, fotos: [] },
-  { id: "prop-4", identificador: "3B", estado: true, costo_base: 1100, caracteristicas: { habitaciones: 1, bano_propio: true, cocina: false }, fotos: [] },
-  { id: "prop-5", identificador: "4A", estado: true, costo_base: 1500, caracteristicas: { habitaciones: 3, bano_propio: true, cocina: true }, fotos: [] }
+  { id: "prop-3", identificador: "3A", estado: true, costo_base: 1100, caracteristicas: { habitaciones: 2, bano_propio: true, cocina: true }, fotos: [] },
+  { id: "prop-4", identificador: "3B", estado: true, costo_base: 1000, caracteristicas: { habitaciones: 1, bano_propio: true, cocina: false }, fotos: [] },
+  { id: "prop-5", identificador: "4A", estado: true, costo_base: 900, caracteristicas: { habitaciones: 3, bano_propio: true, cocina: true }, fotos: [] }
 ];
 
 const SEED_INQUILINOS = [
@@ -32,11 +32,11 @@ const SEED_INQUILINOS = [
     id: "inq-1",
     propiedad_id: "prop-1",
     nombre: "Carlos Ramirez Torres",
-    dni: "74253618",
+    dni: "45678912",
     telefono: "987654321",
-    correo: "carlos.ramirez@example.com",
+    correo: "carlos.ramirez.demo@email.com",
     fecha_ingreso: "2025-08-12",
-    estado_cuenta: "Pendiente",
+    estado_cuenta: "Activo",
     garantia_monto: 1200,
     documentos: { dni_url: "", contrato_url: "" },
     vehiculo: { tiene_vehiculo: true, tipo: "Auto", placa: "ABC-123", monto_asociacion: 50 }
@@ -45,11 +45,11 @@ const SEED_INQUILINOS = [
     id: "inq-2",
     propiedad_id: "prop-2",
     nombre: "Lucia Fernandez Rojas",
-    dni: "71829463",
+    dni: "46789123",
     telefono: "912345678",
-    correo: "lucia.fernandez@example.com",
+    correo: "lucia.fernandez.demo@email.com",
     fecha_ingreso: "2025-10-01",
-    estado_cuenta: "Al dia",
+    estado_cuenta: "Activo",
     garantia_monto: 950,
     documentos: { dni_url: "", contrato_url: "" },
     vehiculo: { tiene_vehiculo: false, tipo: "", placa: "", monto_asociacion: 0 }
@@ -58,12 +58,12 @@ const SEED_INQUILINOS = [
     id: "inq-3",
     propiedad_id: "prop-3",
     nombre: "Miguel Huaman Perez",
-    dni: "46781295",
-    telefono: "934567890",
-    correo: "miguel.huaman@example.com",
+    dni: "47891234",
+    telefono: "956789123",
+    correo: "miguel.huaman.demo@email.com",
     fecha_ingreso: "2025-06-20",
-    estado_cuenta: "Al dia",
-    garantia_monto: 1300,
+    estado_cuenta: "Activo",
+    garantia_monto: 1100,
     documentos: { dni_url: "", contrato_url: "" },
     vehiculo: { tiene_vehiculo: false, tipo: "", placa: "", monto_asociacion: 0 }
   },
@@ -71,12 +71,12 @@ const SEED_INQUILINOS = [
     id: "inq-4",
     propiedad_id: "prop-4",
     nombre: "Andrea Castillo Vega",
-    dni: "70514382",
-    telefono: "956789123",
-    correo: "andrea.castillo@example.com",
+    dni: "48912345",
+    telefono: "934567891",
+    correo: "andrea.castillo.demo@email.com",
     fecha_ingreso: "2026-01-15",
-    estado_cuenta: "Pendiente",
-    garantia_monto: 1100,
+    estado_cuenta: "Activo",
+    garantia_monto: 1000,
     documentos: { dni_url: "", contrato_url: "" },
     vehiculo: { tiene_vehiculo: true, tipo: "Moto", placa: "M2K-784", monto_asociacion: 25 }
   },
@@ -84,12 +84,12 @@ const SEED_INQUILINOS = [
     id: "inq-5",
     propiedad_id: "prop-5",
     nombre: "Jose Salazar Mendoza",
-    dni: "42987651",
-    telefono: "978123456",
-    correo: "jose.salazar@example.com",
+    dni: "49123456",
+    telefono: "998765432",
+    correo: "jose.salazar.demo@email.com",
     fecha_ingreso: "2024-11-05",
-    estado_cuenta: "Activo",
-    garantia_monto: 1500,
+    estado_cuenta: "Pendiente",
+    garantia_monto: 900,
     documentos: { dni_url: "", contrato_url: "" },
     vehiculo: { tiene_vehiculo: true, tipo: "Auto", placa: "BHQ-512", monto_asociacion: 50 }
   }
@@ -138,7 +138,7 @@ const SEED_MENSUALIDADES = [
     },
     abonos: [{ fecha: "2026-05-05", monto: 1387, metodo: "BCP" }],
     gastos_relacionados: [],
-    total_cobrado: 1387,
+    total_cobrado: 1187,
     voucher_url: ""
   },
   {
@@ -153,7 +153,7 @@ const SEED_MENSUALIDADES = [
     },
     abonos: [{ fecha: "2026-05-08", monto: 600, metodo: "Plin" }],
     gastos_relacionados: [{ concepto: "Reposicion de chapa", monto: 35 }],
-    total_cobrado: 1224,
+    total_cobrado: 1124,
     voucher_url: ""
   },
   {
@@ -168,7 +168,7 @@ const SEED_MENSUALIDADES = [
     },
     abonos: [{ fecha: "2026-05-02", monto: 1678, metodo: "Interbank" }],
     gastos_relacionados: [],
-    total_cobrado: 1678,
+    total_cobrado: 1078,
     voucher_url: ""
   }
 ];
@@ -242,15 +242,30 @@ const shouldRefreshSeedRecord = (key, existing, seed) => {
   if (!existing) return false;
 
   if (key === LOCAL_KEYS.inquilinos) {
-    return ["inq-1", "inq-3"].includes(seed.id) && (!existing.dni || existing.nombre?.includes("Juan") || existing.nombre?.includes("Mar"));
+    return (
+      ["inq-1", "inq-2", "inq-3", "inq-4", "inq-5"].includes(seed.id) &&
+      (
+        !existing.dni ||
+        !existing.correo ||
+        existing.correo.endsWith("@example.com") ||
+        existing.dni !== seed.dni ||
+        existing.telefono !== seed.telefono
+      )
+    );
   }
 
   if (key === LOCAL_KEYS.mensualidades) {
-    return ["mens-1", "mens-2"].includes(seed.id) && !Array.isArray(existing.abonos);
+    return (
+      ["mens-1", "mens-2", "mens-3", "mens-4", "mens-5"].includes(seed.id) &&
+      (!Array.isArray(existing.abonos) || Number(existing.total_cobrado) !== Number(seed.total_cobrado))
+    );
   }
 
   if (key === LOCAL_KEYS.propiedades) {
-    return ["prop-2", "prop-4"].includes(seed.id) && !existing.created_at;
+    return (
+      ["prop-1", "prop-2", "prop-3", "prop-4", "prop-5"].includes(seed.id) &&
+      (!existing.created_at || Number(existing.costo_base) !== Number(seed.costo_base))
+    );
   }
 
   return false;
