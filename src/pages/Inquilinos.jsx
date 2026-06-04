@@ -427,8 +427,8 @@ export default function Inquilinos() {
         open={!!confirmDelete}
         danger
         title="Retirar inquilino"
-        message={`Se retirará a ${confirmDelete?.nombre} y el departamento asignado quedará disponible.`}
-        confirmLabel="Retirar"
+        message={`Estas a punto de retirar a ${confirmDelete?.nombre}. No se borrara definitivamente, dejara de mostrarse en la vista principal, el departamento quedara disponible y la accion se registrara en el historial.`}
+        confirmLabel="Confirmar accion"
         onCancel={() => setConfirmDelete(null)}
         onConfirm={handleDelete}
       />

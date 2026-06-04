@@ -173,8 +173,8 @@ export default function DeptoGrid({ onEditDepto }) {
         open={!!confirmDelete}
         danger
         title="Eliminar departamento"
-        message={`Se eliminará el departamento ${confirmDelete?.ident}. Esta acción no se puede deshacer.`}
-        confirmLabel="Eliminar"
+        message={`Estas a punto de eliminar el departamento ${confirmDelete?.ident}. No se borrara definitivamente, pero dejara de mostrarse en la vista principal y quedara registrado en el historial.`}
+        confirmLabel="Confirmar accion"
         onCancel={() => setConfirmDelete(null)}
         onConfirm={confirmDeleteDepto}
       />

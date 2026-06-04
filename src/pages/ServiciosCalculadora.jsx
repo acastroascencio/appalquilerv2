@@ -1,16 +1,14 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useApp } from "../context/AppContext";
 import { buildWhatsAppLink } from "../utils/WhatsAppLinkBuilder";
 import { jsPDF } from "jspdf";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
 import { 
-  Calculator, 
   Plus, 
   Trash2, 
   MessageSquare, 
   FileText, 
   Save, 
-  Check, 
   AlertCircle 
 } from "lucide-react";
 
@@ -660,8 +658,8 @@ export default function ServiciosCalculadora({ inquilino }) {
         open={!!confirmDeletePeriod}
         danger
         title="Eliminar periodo"
-        message={`Se eliminará el periodo ${confirmDeletePeriod?.mes_anio}. Esta acción no se puede deshacer.`}
-        confirmLabel="Eliminar"
+        message={`Estas a punto de eliminar el periodo ${confirmDeletePeriod?.mes_anio}. No se borrara definitivamente, dejara de mostrarse en la vista principal y quedara registrado en el historial.`}
+        confirmLabel="Confirmar accion"
         onCancel={() => setConfirmDeletePeriod(null)}
         onConfirm={handleDeletePeriod}
       />

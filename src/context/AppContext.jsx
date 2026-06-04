@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { db } from "../services/db";
 
 const AppContext = createContext();
@@ -8,6 +8,9 @@ export const AppProvider = ({ children }) => {
   const [inquilinos, setInquilinos] = useState([]);
   const [mensualidades, setMensualidades] = useState([]);
   const [config, setConfig] = useState(null);
+  const [deletedRecords, setDeletedRecords] = useState([]);
+  const [changeHistory, setChangeHistory] = useState([]);
+  const [backupMeta, setBackupMeta] = useState(null);
   const [loading, setLoading] = useState(true);
   
   // Enrutamiento simplificado por estado
@@ -17,16 +20,22 @@ export const AppProvider = ({ children }) => {
   const refreshAll = async () => {
     setLoading(true);
     try {
-      const [props, inqs, menses, cfg] = await Promise.all([
+      const [props, inqs, menses, cfg, deleted, history, backup] = await Promise.all([
         db.getPropiedades(),
         db.getInquilinos(),
         db.getMensualidades(),
-        db.getConfig()
+        db.getConfig(),
+        db.getDeletedRecords(),
+        db.getChangeHistory(),
+        db.getBackupMeta()
       ]);
       setPropiedades(props);
       setInquilinos(inqs);
       setMensualidades(menses);
       setConfig(cfg);
+      setDeletedRecords(deleted);
+      setChangeHistory(history);
+      setBackupMeta(backup);
     } catch (error) {
       console.error("Error al cargar datos desde la base de datos:", error);
     } finally {
@@ -207,6 +216,34 @@ export const AppProvider = ({ children }) => {
     return saved;
   };
 
+  const exportBackup = async () => {
+    const backup = await db.createBackup({
+      generatedBy: config?.titular || "Administrador"
+    });
+    await refreshAll();
+    return backup;
+  };
+
+  const importBackup = async (payload) => {
+    const result = await db.importBackup(payload, {
+      importedBy: config?.titular || "Administrador"
+    });
+    await refreshAll();
+    return result;
+  };
+
+  const restoreRecord = async (module, id) => {
+    const restored = await db.restoreRecord(module, id);
+    await db.registrarLog({
+      admin_id: config?.titular,
+      accion: "RESTAURAR_REGISTRO",
+      descripcion: `Se restauro un registro del modulo ${module}.`,
+      detalles: { module, id }
+    });
+    await refreshAll();
+    return restored;
+  };
+
 
   return (
     <AppContext.Provider
@@ -215,6 +252,9 @@ export const AppProvider = ({ children }) => {
         inquilinos,
         mensualidades,
         config,
+        deletedRecords,
+        changeHistory,
+        backupMeta,
         loading,
         activePage,
         setActivePage,
@@ -227,7 +267,10 @@ export const AppProvider = ({ children }) => {
         deleteInquilino,
         saveMensualidad,
         deleteMensualidad,
-        saveConfig
+        saveConfig,
+        exportBackup,
+        importBackup,
+        restoreRecord
       }}
     >
       {children}

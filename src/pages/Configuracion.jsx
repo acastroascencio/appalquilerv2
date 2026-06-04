@@ -1,4 +1,5 @@
 import CuentasBancariasForm from "./CuentasBancariasForm";
+import BackupSecurityPanel from "./BackupSecurityPanel";
 import { Settings } from "lucide-react";
 
 export default function Configuracion() {
@@ -19,6 +20,7 @@ export default function Configuracion() {
 
       {/* Formulario */}
       <CuentasBancariasForm />
+      <BackupSecurityPanel />
     </div>
   );
 }
