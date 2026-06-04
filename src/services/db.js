@@ -21,29 +21,77 @@ if (isFirebaseConfigured) {
 // ===== SEED DATA PARA LOCAL STORAGE =====
 const SEED_PROPIEDADES = [
   { id: "prop-1", identificador: "2A", estado: true, costo_base: 1200, caracteristicas: { habitaciones: 2, bano_propio: true, cocina: true }, fotos: [] },
-  { id: "prop-2", identificador: "2B", estado: false, costo_base: 900, caracteristicas: { habitaciones: 1, bano_propio: true, cocina: true }, fotos: [] },
+  { id: "prop-2", identificador: "2B", estado: true, costo_base: 950, caracteristicas: { habitaciones: 1, bano_propio: true, cocina: true }, fotos: [] },
   { id: "prop-3", identificador: "3A", estado: true, costo_base: 1300, caracteristicas: { habitaciones: 2, bano_propio: true, cocina: true }, fotos: [] },
-  { id: "prop-4", identificador: "3B", estado: false, costo_base: 850, caracteristicas: { habitaciones: 1, bano_propio: true, cocina: false }, fotos: [] }
+  { id: "prop-4", identificador: "3B", estado: true, costo_base: 1100, caracteristicas: { habitaciones: 1, bano_propio: true, cocina: false }, fotos: [] },
+  { id: "prop-5", identificador: "4A", estado: true, costo_base: 1500, caracteristicas: { habitaciones: 3, bano_propio: true, cocina: true }, fotos: [] }
 ];
 
 const SEED_INQUILINOS = [
-  { 
-    id: "inq-1", 
-    propiedad_id: "prop-1", 
-    nombre: "Juan Pérez García", 
-    telefono: "987654321", 
-    garantia_monto: 1200, 
+  {
+    id: "inq-1",
+    propiedad_id: "prop-1",
+    nombre: "Carlos Ramirez Torres",
+    dni: "74253618",
+    telefono: "987654321",
+    correo: "carlos.ramirez@example.com",
+    fecha_ingreso: "2025-08-12",
+    estado_cuenta: "Pendiente",
+    garantia_monto: 1200,
     documentos: { dni_url: "", contrato_url: "" },
     vehiculo: { tiene_vehiculo: true, tipo: "Auto", placa: "ABC-123", monto_asociacion: 50 }
   },
-  { 
-    id: "inq-3", 
-    propiedad_id: "prop-3", 
-    nombre: "María López Rodríguez", 
-    telefono: "912345678", 
-    garantia_monto: 1300, 
+  {
+    id: "inq-2",
+    propiedad_id: "prop-2",
+    nombre: "Lucia Fernandez Rojas",
+    dni: "71829463",
+    telefono: "912345678",
+    correo: "lucia.fernandez@example.com",
+    fecha_ingreso: "2025-10-01",
+    estado_cuenta: "Al dia",
+    garantia_monto: 950,
     documentos: { dni_url: "", contrato_url: "" },
     vehiculo: { tiene_vehiculo: false, tipo: "", placa: "", monto_asociacion: 0 }
+  },
+  {
+    id: "inq-3",
+    propiedad_id: "prop-3",
+    nombre: "Miguel Huaman Perez",
+    dni: "46781295",
+    telefono: "934567890",
+    correo: "miguel.huaman@example.com",
+    fecha_ingreso: "2025-06-20",
+    estado_cuenta: "Al dia",
+    garantia_monto: 1300,
+    documentos: { dni_url: "", contrato_url: "" },
+    vehiculo: { tiene_vehiculo: false, tipo: "", placa: "", monto_asociacion: 0 }
+  },
+  {
+    id: "inq-4",
+    propiedad_id: "prop-4",
+    nombre: "Andrea Castillo Vega",
+    dni: "70514382",
+    telefono: "956789123",
+    correo: "andrea.castillo@example.com",
+    fecha_ingreso: "2026-01-15",
+    estado_cuenta: "Pendiente",
+    garantia_monto: 1100,
+    documentos: { dni_url: "", contrato_url: "" },
+    vehiculo: { tiene_vehiculo: true, tipo: "Moto", placa: "M2K-784", monto_asociacion: 25 }
+  },
+  {
+    id: "inq-5",
+    propiedad_id: "prop-5",
+    nombre: "Jose Salazar Mendoza",
+    dni: "42987651",
+    telefono: "978123456",
+    correo: "jose.salazar@example.com",
+    fecha_ingreso: "2024-11-05",
+    estado_cuenta: "Activo",
+    garantia_monto: 1500,
+    documentos: { dni_url: "", contrato_url: "" },
+    vehiculo: { tiene_vehiculo: true, tipo: "Auto", placa: "BHQ-512", monto_asociacion: 50 }
   }
 ];
 
@@ -58,11 +106,28 @@ const SEED_MENSUALIDADES = [
       agua: { aplica: true, lectura_anterior: 350, lectura_actual: 362, subtotal: 48 },
       seguridad: { aplica: true, subtotal: 15 }
     },
-    total_cobrado: 1373, // 1200 (base) + 60 (luz) + 48 (agua) + 15 (segur) + 50 (auto)
+    abonos: [{ fecha: "2026-05-10", monto: 500, metodo: "Yape" }],
+    gastos_relacionados: [{ concepto: "Mantenimiento de griferia", monto: 45 }],
+    total_cobrado: 1373,
     voucher_url: ""
   },
   {
     id: "mens-2",
+    inquilino_id: "inq-2",
+    mes_anio: "05-2026",
+    estado: "Pagado",
+    servicios: {
+      luz: { aplica: true, lectura_anterior: 820, lectura_actual: 848, subtotal: 28 },
+      agua: { aplica: true, lectura_anterior: 210, lectura_actual: 217, subtotal: 28 },
+      seguridad: { aplica: true, subtotal: 15 }
+    },
+    abonos: [{ fecha: "2026-05-03", monto: 1021, metodo: "Transferencia" }],
+    gastos_relacionados: [],
+    total_cobrado: 1021,
+    voucher_url: ""
+  },
+  {
+    id: "mens-3",
     inquilino_id: "inq-3",
     mes_anio: "05-2026",
     estado: "Pagado",
@@ -71,7 +136,39 @@ const SEED_MENSUALIDADES = [
       agua: { aplica: true, lectura_anterior: 110, lectura_actual: 118, subtotal: 32 },
       seguridad: { aplica: true, subtotal: 15 }
     },
-    total_cobrado: 1387, // 1300 (base) + 40 + 32 + 15
+    abonos: [{ fecha: "2026-05-05", monto: 1387, metodo: "BCP" }],
+    gastos_relacionados: [],
+    total_cobrado: 1387,
+    voucher_url: ""
+  },
+  {
+    id: "mens-4",
+    inquilino_id: "inq-4",
+    mes_anio: "05-2026",
+    estado: "Pendiente",
+    servicios: {
+      luz: { aplica: true, lectura_anterior: 640, lectura_actual: 688, subtotal: 48 },
+      agua: { aplica: true, lectura_anterior: 92, lectura_actual: 101, subtotal: 36 },
+      seguridad: { aplica: true, subtotal: 15 }
+    },
+    abonos: [{ fecha: "2026-05-08", monto: 600, metodo: "Plin" }],
+    gastos_relacionados: [{ concepto: "Reposicion de chapa", monto: 35 }],
+    total_cobrado: 1224,
+    voucher_url: ""
+  },
+  {
+    id: "mens-5",
+    inquilino_id: "inq-5",
+    mes_anio: "05-2026",
+    estado: "Activo",
+    servicios: {
+      luz: { aplica: true, lectura_anterior: 1650, lectura_actual: 1715, subtotal: 65 },
+      agua: { aplica: true, lectura_anterior: 410, lectura_actual: 422, subtotal: 48 },
+      seguridad: { aplica: true, subtotal: 15 }
+    },
+    abonos: [{ fecha: "2026-05-02", monto: 1678, metodo: "Interbank" }],
+    gastos_relacionados: [],
+    total_cobrado: 1678,
     voucher_url: ""
   }
 ];
@@ -141,19 +238,66 @@ const appendLocalHistory = (entry) => {
   return fullEntry;
 };
 
+const shouldRefreshSeedRecord = (key, existing, seed) => {
+  if (!existing) return false;
+
+  if (key === LOCAL_KEYS.inquilinos) {
+    return ["inq-1", "inq-3"].includes(seed.id) && (!existing.dni || existing.nombre?.includes("Juan") || existing.nombre?.includes("Mar"));
+  }
+
+  if (key === LOCAL_KEYS.mensualidades) {
+    return ["mens-1", "mens-2"].includes(seed.id) && !Array.isArray(existing.abonos);
+  }
+
+  if (key === LOCAL_KEYS.propiedades) {
+    return ["prop-2", "prop-4"].includes(seed.id) && !existing.created_at;
+  }
+
+  return false;
+};
+
+const mergeSeedRecords = (key, seedRecords) => {
+  const current = readLocal(key, []);
+  const currentById = new Map(current.map((record) => [record.id, record]));
+  let changed = !localStorage.getItem(key);
+
+  for (const seed of seedRecords) {
+    const existing = currentById.get(seed.id);
+
+    if (!existing) {
+      currentById.set(seed.id, seed);
+      changed = true;
+    } else if (shouldRefreshSeedRecord(key, existing, seed)) {
+      currentById.set(seed.id, { ...existing, ...seed });
+      changed = true;
+    }
+  }
+
+  if (changed) {
+    writeLocal(key, Array.from(currentById.values()));
+  }
+};
+
+const syncSeedOccupiedStates = () => {
+  const props = readLocal(LOCAL_KEYS.propiedades, []);
+  const inqs = visibleOnly(readLocal(LOCAL_KEYS.inquilinos, []));
+  const occupiedIds = new Set(inqs.map((inq) => inq.propiedad_id).filter(Boolean));
+  const nextProps = props.map((prop) =>
+    occupiedIds.has(prop.id) ? { ...prop, estado: true } : prop
+  );
+
+  writeLocal(LOCAL_KEYS.propiedades, nextProps);
+};
+
 // Helper para inicializar LocalStorage
 const initLocalStorage = () => {
-  if (!localStorage.getItem("alquiler_propiedades")) {
-    localStorage.setItem("alquiler_propiedades", JSON.stringify(SEED_PROPIEDADES));
-  }
-  if (!localStorage.getItem("alquiler_inquilinos")) {
-    localStorage.setItem("alquiler_inquilinos", JSON.stringify(SEED_INQUILINOS));
-  }
-  if (!localStorage.getItem("alquiler_mensualidades")) {
-    localStorage.setItem("alquiler_mensualidades", JSON.stringify(SEED_MENSUALIDADES));
-  }
-  if (!localStorage.getItem("alquiler_config")) {
-    localStorage.setItem("alquiler_config", JSON.stringify(SEED_CONFIG));
+  mergeSeedRecords(LOCAL_KEYS.propiedades, SEED_PROPIEDADES);
+  mergeSeedRecords(LOCAL_KEYS.inquilinos, SEED_INQUILINOS);
+  mergeSeedRecords(LOCAL_KEYS.mensualidades, SEED_MENSUALIDADES);
+  syncSeedOccupiedStates();
+
+  if (!localStorage.getItem(LOCAL_KEYS.config)) {
+    writeLocal(LOCAL_KEYS.config, SEED_CONFIG);
   }
 };
 

@@ -213,6 +213,7 @@ export const AppProvider = ({ children }) => {
       descripcion: `Se actualizaron las tarifas y cuentas bancarias del propietario "${saved.titular}"`
     });
 
+    await refreshAll();
     return saved;
   };
 

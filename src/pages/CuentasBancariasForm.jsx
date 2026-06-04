@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useApp } from "../context/AppContext";
 import { Save, Shield, CreditCard, DollarSign } from "lucide-react";
+import ConfirmDialog from "../components/ui/ConfirmDialog";
 
 export default function CuentasBancariasForm() {
   const { config, saveConfig } = useApp();
@@ -18,6 +19,7 @@ export default function CuentasBancariasForm() {
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
   const [formSuccess, setFormSuccess] = useState("");
+  const [pendingConfig, setPendingConfig] = useState(null);
 
   useEffect(() => {
     if (config) {
@@ -33,37 +35,63 @@ export default function CuentasBancariasForm() {
     }
   }, [config]);
 
-  const handleSubmit = async (e) => {
+  const buildPayload = () => ({
+    titular: titular.trim(),
+    billeteras: { yape: yape.trim(), plin: plin.trim() },
+    bancos: {
+      bcp_cuenta: bcpCuenta.trim(),
+      bcp_cci: bcpCci.trim().toUpperCase(),
+      interbank_cuenta: interbankCuenta.trim(),
+      interbank_cci: interbankCci.trim().toUpperCase()
+    },
+    tarifas: {
+      luz: Number(luzTarifa) || 0,
+      agua: Number(aguaTarifa) || 0
+    }
+  });
+
+  const validatePayload = (payload) => {
+    if (!payload.titular) {
+      return "El nombre del titular es obligatorio.";
+    }
+
+    if (payload.tarifas.luz < 0 || payload.tarifas.agua < 0) {
+      return "Las tarifas no pueden ser negativas.";
+    }
+
+    return "";
+  };
+
+  const handleSubmit = (e) => {
     e.preventDefault();
     setFormError("");
     setFormSuccess("");
-    if (!titular) {
-      setFormError("El nombre del titular es obligatorio.");
+
+    const payload = buildPayload();
+    const validationError = validatePayload(payload);
+
+    if (validationError) {
+      setFormError(validationError);
       return;
     }
 
-    setSaving(true);
-    try {
-      const payload = {
-        titular,
-        billeteras: { yape, plin },
-        bancos: {
-          bcp_cuenta: bcpCuenta,
-          bcp_cci: bcpCci.toUpperCase(),
-          interbank_cuenta: interbankCuenta,
-          interbank_cci: interbankCci.toUpperCase()
-        },
-        tarifas: {
-          luz: Number(luzTarifa) || 0,
-          agua: Number(aguaTarifa) || 0
-        }
-      };
+    setPendingConfig(payload);
+  };
 
-      await saveConfig(payload);
-      setFormSuccess("Configuración de cobros guardada correctamente.");
+  const confirmSaveConfig = async () => {
+    if (!pendingConfig) return;
+
+    setSaving(true);
+    setFormError("");
+    setFormSuccess("");
+
+    try {
+      await saveConfig(pendingConfig);
+      setPendingConfig(null);
+      setFormSuccess("Configuracion guardada correctamente.");
     } catch (error) {
-      console.error("Error al guardar configuración:", error);
-      setFormError("Ocurrió un error al guardar. Intenta nuevamente.");
+      console.error("Error al guardar configuracion:", error);
+      setFormError("No se pudo guardar la configuracion. Verifica tu conexion o intenta nuevamente.");
     } finally {
       setSaving(false);
     }
@@ -77,19 +105,24 @@ export default function CuentasBancariasForm() {
         </div>
       )}
       {formSuccess && (
-        <div className="app-alert-success" role="status">
+        <div className="app-alert-success" role="status" aria-live="polite">
           <span>{formSuccess}</span>
         </div>
       )}
-      {/* 1. DATOS TITULAR */}
+
       <div className="card-container space-y-4">
         <div className="flex items-center gap-2 border-b border-slate-100 pb-3 mb-2">
-          <Shield className="h-5 w-5 text-blue-500" />
-          <h4 className="font-extrabold text-slate-800 text-sm uppercase tracking-wide">Datos del Propietario / Titular</h4>
+          <Shield className="h-5 w-5 text-blue-500" aria-hidden="true" />
+          <h4 className="font-extrabold text-slate-800 text-sm uppercase tracking-wide">
+            Datos del Propietario / Titular
+          </h4>
         </div>
         <div>
-          <label className="label-text">Nombre del Titular de Cobro *</label>
+          <label className="label-text" htmlFor="config-titular">
+            Nombre del Titular de Cobro *
+          </label>
           <input
+            id="config-titular"
             type="text"
             className="input-field"
             placeholder="Ej. Mario Andres Castro Ascencio"
@@ -100,17 +133,19 @@ export default function CuentasBancariasForm() {
         </div>
       </div>
 
-      {/* 2. CUENTAS Y BILLETERAS */}
       <div className="card-container space-y-4">
         <div className="flex items-center gap-2 border-b border-slate-100 pb-3 mb-2">
-          <CreditCard className="h-5 w-5 text-blue-500" />
-          <h4 className="font-extrabold text-slate-800 text-sm uppercase tracking-wide">Cuentas Bancarias y Billeteras Digitales</h4>
+          <CreditCard className="h-5 w-5 text-blue-500" aria-hidden="true" />
+          <h4 className="font-extrabold text-slate-800 text-sm uppercase tracking-wide">
+            Cuentas Bancarias y Billeteras Digitales
+          </h4>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="label-text">Número de Yape (Celular)</label>
+            <label className="label-text" htmlFor="config-yape">Numero de Yape (Celular)</label>
             <input
+              id="config-yape"
               type="text"
               className="input-field"
               placeholder="Ej. 987654321"
@@ -119,8 +154,9 @@ export default function CuentasBancariasForm() {
             />
           </div>
           <div>
-            <label className="label-text">Número de Plin (Celular)</label>
+            <label className="label-text" htmlFor="config-plin">Numero de Plin (Celular)</label>
             <input
+              id="config-plin"
               type="text"
               className="input-field"
               placeholder="Ej. 987654321"
@@ -132,8 +168,9 @@ export default function CuentasBancariasForm() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
           <div>
-            <label className="label-text">Cuenta BCP</label>
+            <label className="label-text" htmlFor="config-bcp">Cuenta BCP</label>
             <input
+              id="config-bcp"
               type="text"
               className="input-field"
               placeholder="Ej. 191-98765432-0-12"
@@ -142,8 +179,9 @@ export default function CuentasBancariasForm() {
             />
           </div>
           <div>
-            <label className="label-text">CCI BCP (Interbancario)</label>
+            <label className="label-text" htmlFor="config-bcp-cci">CCI BCP (Interbancario)</label>
             <input
+              id="config-bcp-cci"
               type="text"
               className="input-field"
               placeholder="Ej. 002-19198765432012-54"
@@ -155,8 +193,9 @@ export default function CuentasBancariasForm() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
           <div>
-            <label className="label-text">Cuenta Interbank</label>
+            <label className="label-text" htmlFor="config-interbank">Cuenta Interbank</label>
             <input
+              id="config-interbank"
               type="text"
               className="input-field"
               placeholder="Ej. 200-300456789"
@@ -165,8 +204,9 @@ export default function CuentasBancariasForm() {
             />
           </div>
           <div>
-            <label className="label-text">CCI Interbank (Interbancario)</label>
+            <label className="label-text" htmlFor="config-interbank-cci">CCI Interbank (Interbancario)</label>
             <input
+              id="config-interbank-cci"
               type="text"
               className="input-field"
               placeholder="Ej. 003-200300456789-11"
@@ -177,19 +217,22 @@ export default function CuentasBancariasForm() {
         </div>
       </div>
 
-      {/* 3. TARIFAS ESTÁNDAR */}
       <div className="card-container space-y-4">
         <div className="flex items-center gap-2 border-b border-slate-100 pb-3 mb-2">
-          <DollarSign className="h-5 w-5 text-blue-500" />
-          <h4 className="font-extrabold text-slate-800 text-sm uppercase tracking-wide">Tarifas Estándar de Servicios</h4>
+          <DollarSign className="h-5 w-5 text-blue-500" aria-hidden="true" />
+          <h4 className="font-extrabold text-slate-800 text-sm uppercase tracking-wide">
+            Tarifas Estandar de Servicios
+          </h4>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="label-text">Tarifa Energía Eléctrica (S/ por kWh)</label>
+            <label className="label-text" htmlFor="config-luz">Tarifa Energia Electrica (S/ por kWh)</label>
             <input
+              id="config-luz"
               type="number"
               step="0.01"
+              min="0"
               className="input-field"
               placeholder="Ej. 1.0"
               value={luzTarifa}
@@ -197,10 +240,12 @@ export default function CuentasBancariasForm() {
             />
           </div>
           <div>
-            <label className="label-text">Tarifa Agua Potable (S/ por m³)</label>
+            <label className="label-text" htmlFor="config-agua">Tarifa Agua Potable (S/ por m3)</label>
             <input
+              id="config-agua"
               type="number"
               step="0.01"
+              min="0"
               className="input-field"
               placeholder="Ej. 4.0"
               value={aguaTarifa}
@@ -210,15 +255,26 @@ export default function CuentasBancariasForm() {
         </div>
       </div>
 
-      {/* BOTÓN GUARDAR */}
       <button
         type="submit"
         disabled={saving}
         className="w-full btn-primary text-sm font-bold shadow-md shadow-blue-500/10"
       >
         <Save className="h-5 w-5 shrink-0" aria-hidden="true" />
-        <span>{saving ? "Guardando Configuración..." : "Guardar Toda la Configuración"}</span>
+        <span>{saving ? "Guardando configuracion..." : "Guardar Toda la Configuracion"}</span>
       </button>
+
+      <ConfirmDialog
+        open={Boolean(pendingConfig)}
+        title="Guardar configuracion"
+        message="Se actualizaran las cuentas de cobro, tarifas y datos del propietario. El cambio quedara registrado en el historial."
+        confirmLabel={saving ? "Guardando..." : "Guardar configuracion"}
+        cancelLabel="Cancelar"
+        onConfirm={confirmSaveConfig}
+        onCancel={() => {
+          if (!saving) setPendingConfig(null);
+        }}
+      />
     </form>
   );
 }
