@@ -1,4 +1,4 @@
-import { Home, Zap, Users, Building, User } from "lucide-react";
+import { Building, Home, User, Users, Zap } from "lucide-react";
 
 export default function BottomNav({ paginaActiva, setPaginaActiva }) {
   const itemsMenu = [
@@ -11,7 +11,7 @@ export default function BottomNav({ paginaActiva, setPaginaActiva }) {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-40 grid min-h-[84px] grid-cols-5 gap-1 border-t border-slate-200 bg-white/95 px-2 pb-2 pt-2 shadow-2xl backdrop-blur"
+      className="fixed bottom-0 left-0 right-0 z-40 grid min-h-[84px] grid-cols-5 gap-1.5 border-t border-slate-200 bg-white/95 px-2 pb-2 pt-2 shadow-2xl backdrop-blur"
       aria-label="Navegación principal de la aplicación"
     >
       {itemsMenu.map((item) => {
@@ -23,15 +23,15 @@ export default function BottomNav({ paginaActiva, setPaginaActiva }) {
             key={item.id}
             type="button"
             onClick={() => setPaginaActiva(item.id)}
-            className={`flex min-w-0 flex-col items-center justify-center rounded-lg px-1 py-2 transition-all duration-150 ${
+            className={`flex min-h-16 min-w-0 flex-col items-center justify-center gap-1.5 rounded-xl px-1 py-2 text-center text-[11px] font-extrabold leading-tight transition-colors duration-150 ${
               estaActivo
-                ? "bg-blue-700 text-white font-black"
-                : "text-slate-500 font-bold hover:bg-slate-100"
+                ? "bg-blue-700 text-white"
+                : "text-slate-500 hover:bg-slate-100"
             }`}
             aria-current={estaActivo ? "page" : undefined}
           >
-            <Icono className="mb-1 h-6 w-6 shrink-0" aria-hidden="true" />
-            <span className="max-w-full truncate text-[11px] tracking-wide">{item.label}</span>
+            <Icono className="h-6 w-6 shrink-0" aria-hidden="true" />
+            <span className="block max-w-full truncate">{item.label}</span>
           </button>
         );
       })}

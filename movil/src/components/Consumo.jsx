@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { clienteSupabase } from "../config/supabase";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -6,19 +6,22 @@ import { twMerge } from "tailwind-merge";
 import { 
   Calculator, 
   User, 
-  Building, 
   DollarSign, 
   MessageSquare, 
   Lightbulb, 
   TrendingUp, 
   AlertCircle, 
-  FileText,
   CheckCircle,
-  HelpCircle,
   Droplet
 } from "lucide-react";
 import { registrarLogSistema } from "../utils/logger";
 
+const iconoCampoClass =
+  "pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400";
+
+function IconoCampo({ icon: Icono }) {
+  return <Icono className={iconoCampoClass} aria-hidden="true" />;
+}
 
 export default function Consumo({ sesion }) {
   const adminId = sesion?.user?.id;
@@ -467,8 +470,10 @@ export default function Consumo({ sesion }) {
         </p>
       ) : (
         <section className="tarjeta-premium bg-white border border-slate-200 shadow-xl space-y-6">
-          <h2 className="titulo-mediano flex items-center gap-2 border-b border-slate-100 pb-3 text-slate-800">
-            <Calculator className="h-6 w-6 text-blue-600" aria-hidden="true" />
+          <h2 className="titulo-mediano flex items-center gap-2.5 border-b border-slate-100 pb-3 text-slate-800 leading-tight">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-700">
+              <Calculator className="h-6 w-6" aria-hidden="true" />
+            </span>
             <span>Registro de Consumo Eléctrico y Agua</span>
           </h2>
 
@@ -494,7 +499,7 @@ export default function Consumo({ sesion }) {
                     </option>
                   ))}
                 </select>
-                <User className="absolute left-4 top-4.5 h-5 w-5 text-slate-400" aria-hidden="true" />
+                <IconoCampo icon={User} />
               </div>
             </div>
 
@@ -538,7 +543,7 @@ export default function Consumo({ sesion }) {
                     value={lecturaAnterior}
                     readOnly
                   />
-                  <Lightbulb className="absolute left-4 top-4.5 h-5 w-5 text-slate-400" aria-hidden="true" />
+                  <IconoCampo icon={Lightbulb} />
                 </div>
               </div>
 
@@ -561,7 +566,7 @@ export default function Consumo({ sesion }) {
                     required
                     min="0"
                   />
-                  <TrendingUp className="absolute left-4 top-4.5 h-5 w-5 text-slate-400" aria-hidden="true" />
+                  <IconoCampo icon={TrendingUp} />
                 </div>
               </div>
             </div>
@@ -580,7 +585,7 @@ export default function Consumo({ sesion }) {
                     value={lecturaAnteriorAgua}
                     readOnly
                   />
-                  <Droplet className="absolute left-4 top-4.5 h-5 w-5 text-slate-400" aria-hidden="true" />
+                  <IconoCampo icon={Droplet} />
                 </div>
               </div>
 
@@ -602,7 +607,7 @@ export default function Consumo({ sesion }) {
                     disabled={!inquilinoSeleccionado}
                     min="0"
                   />
-                  <TrendingUp className="absolute left-4 top-4.5 h-5 w-5 text-slate-400" aria-hidden="true" />
+                  <IconoCampo icon={TrendingUp} />
                 </div>
               </div>
             </div>
@@ -697,7 +702,7 @@ export default function Consumo({ sesion }) {
                 </>
               ) : (
                 <>
-                  <DollarSign className="h-5 w-5" aria-hidden="true" />
+                  <DollarSign className="h-5 w-5 shrink-0" aria-hidden="true" />
                   <span>Guardar Recibo</span>
                 </>
               )}

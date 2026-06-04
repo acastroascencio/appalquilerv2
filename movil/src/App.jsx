@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { clienteSupabase } from "./config/supabase";
 import Login from "./components/Login";
 import BottomNav from "./components/BottomNav";
@@ -7,7 +7,15 @@ import Consumo from "./components/Consumo";
 import Inquilinos from "./components/Inquilinos";
 import Departamentos from "./components/Departamentos";
 import MiCuenta from "./components/MiCuenta";
-import { Building, Zap, User } from "lucide-react";
+import { Building, Home, Settings, User, Users, Zap } from "lucide-react";
+
+const iconosCabecera = {
+  inicio: Home,
+  consumo: Zap,
+  inquilinos: Users,
+  departamentos: Building,
+  cuenta: Settings,
+};
 
 export default function App() {
   const [sesionActiva, setSesionActiva] = useState(null);
@@ -96,6 +104,8 @@ export default function App() {
     }
   };
 
+  const IconoCabecera = iconosCabecera[paginaActiva] || Building;
+
   return (
     <div className="min-h-screen bg-[#F9FAFB] flex flex-col font-sans select-none pb-24">
       {/* Cabecera Superior Fija con Estilos Accesibles */}
@@ -103,14 +113,16 @@ export default function App() {
         className="h-16 bg-slate-950 text-white px-6 flex items-center justify-between shadow-md sticky top-0 z-30"
         role="banner"
       >
-        <div className="flex items-center gap-2">
-          <Building className="h-5 w-5 text-blue-500" aria-hidden="true" />
-          <h2 className="text-lg font-black tracking-wide">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-blue-400">
+            <IconoCabecera className="h-6 w-6" aria-hidden="true" />
+          </span>
+          <h2 className="truncate text-lg font-black tracking-wide">
             {obtenerTituloCabecera()}
           </h2>
         </div>
-        <div className="h-9 w-9 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 shadow-inner">
-          <User className="h-4 w-4" aria-hidden="true" />
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-slate-700 bg-slate-800 text-slate-300 shadow-inner">
+          <User className="h-5 w-5" aria-hidden="true" />
         </div>
       </header>
 
