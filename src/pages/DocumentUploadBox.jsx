@@ -11,6 +11,7 @@ import {
   Download, 
   CheckCircle 
 } from "lucide-react";
+import ConfirmDialog from "../components/ui/ConfirmDialog";
 
 // Extensiones permitidas por los requerimientos
 const ALLOWED_EXTENSIONS = ["docx", "doc", "pdf", "png", "jpg", "jpj", "jpeg"];
@@ -27,6 +28,9 @@ export default function DocumentUploadBox({ inquilino }) {
       isMounted.current = false;
     };
   }, []);
+  const [confirmDelete, setConfirmDelete] = useState(null);
+  const [statusMessage, setStatusMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Estados para Modal de Confirmación de Carga
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -41,7 +45,7 @@ export default function DocumentUploadBox({ inquilino }) {
     if (!file) return false;
     const ext = file.name.split('.').pop().toLowerCase();
     if (!ALLOWED_EXTENSIONS.includes(ext)) {
-      alert(`Formato de archivo no permitido.\nSolo se aceptan: .docx, .doc, .pdf, .png, .jpg, .jpeg`);
+      setErrorMessage("Formato no permitido. Solo se aceptan .docx, .doc, .pdf, .png, .jpg y .jpeg.");
       return false;
     }
     return true;
@@ -71,6 +75,8 @@ export default function DocumentUploadBox({ inquilino }) {
   // Procesamiento y guardado de archivo en el Historial y como Activo
   const processUpload = (file, type, inputElement) => {
     setLoadingType(type);
+    setStatusMessage("");
+    setErrorMessage("");
     const reader = new FileReader();
     reader.onloadend = async () => {
       try {
@@ -94,15 +100,10 @@ export default function DocumentUploadBox({ inquilino }) {
           ...inquilino,
           documentos: updatedDocs
         });
-        
-        if (isMounted.current) {
-          alert(`Documento ${type.toUpperCase()} cargado y registrado en el historial.`);
-        }
+        setStatusMessage(`Documento ${type.toUpperCase()} guardado correctamente.`);
       } catch (error) {
         console.error("Error al subir archivo:", error);
-        if (isMounted.current) {
-          alert("Ocurrió un error al subir.");
-        }
+        setErrorMessage("Ocurrió un error al subir el documento. Intenta nuevamente.");
       } finally {
         if (isMounted.current) {
           setLoadingType(null);
@@ -116,7 +117,7 @@ export default function DocumentUploadBox({ inquilino }) {
     reader.readAsDataURL(file);
   };
 
-  // Confirmación desde el Modal
+  // Confirmacion desde el Modal
   const handleConfirmUpload = () => {
     if (pendingUpload) {
       processUpload(pendingUpload.file, pendingUpload.type, pendingUpload.input);
@@ -124,7 +125,7 @@ export default function DocumentUploadBox({ inquilino }) {
     setShowConfirmModal(false);
   };
 
-  // Cancelación desde el Modal
+  // Cancelacion desde el Modal
   const handleCancelUpload = () => {
     if (pendingUpload && pendingUpload.input) {
       pendingUpload.input.value = "";
@@ -133,65 +134,50 @@ export default function DocumentUploadBox({ inquilino }) {
     setShowConfirmModal(false);
   };
 
-  // 3. Eliminar archivos específicos del historial
-  const handleDeleteHistoryItem = async (docId, type) => {
-    if (window.confirm(`¿Estás seguro de que deseas eliminar este documento del historial?`)) {
-      try {
-        const currentHistorial = inquilino.documentos?.historial || [];
-        const updatedHistorial = currentHistorial.filter(doc => doc.id !== docId);
-        
-        let activeUrl = inquilino.documentos?.[`${type}_url`] || "";
-        const deletedDoc = currentHistorial.find(doc => doc.id === docId);
+  const handleDelete = async () => {
+    if (!confirmDelete) return;
+    setStatusMessage("");
+    setErrorMessage("");
+    try {
+      let updatedDocs;
 
-        // Si el documento eliminado era el activo, asignar el último restante del mismo tipo
+      if (confirmDelete.mode === "history") {
+        const { docId, type } = confirmDelete;
+        const currentHistorial = inquilino.documentos?.historial || [];
+        const updatedHistorial = currentHistorial.filter((doc) => doc.id !== docId);
+        const deletedDoc = currentHistorial.find((doc) => doc.id === docId);
+        let activeUrl = inquilino.documentos?.[`${type}_url`] || "";
+
         if (deletedDoc && activeUrl === deletedDoc.url) {
-          const remainingOfType = updatedHistorial.filter(doc => doc.tipo === type);
-          if (remainingOfType.length > 0) {
-            activeUrl = remainingOfType[remainingOfType.length - 1].url;
-          } else {
-            activeUrl = "";
-          }
+          const remainingOfType = updatedHistorial.filter((doc) => doc.tipo === type);
+          activeUrl = remainingOfType.length > 0
+            ? remainingOfType[remainingOfType.length - 1].url
+            : "";
         }
 
-        const updatedDocs = {
+        updatedDocs = {
           ...inquilino.documentos,
           [`${type}_url`]: activeUrl,
           historial: updatedHistorial
         };
-
-        await saveInquilino({
-          ...inquilino,
-          documentos: updatedDocs
-        });
-
-        alert("Documento eliminado del historial.");
-      } catch (error) {
-        console.error("Error al eliminar documento del historial:", error);
-        alert("Ocurrió un error al eliminar.");
-      }
-    }
-  };
-
-  // Eliminar el documento activo (mantiene el comportamiento original pero sincronizado)
-  const handleDeleteActive = async (type) => {
-    if (window.confirm(`¿Está seguro de que desea eliminar el archivo activo ${type.toUpperCase()}?`)) {
-      try {
-        const updatedDocs = {
+      } else {
+        updatedDocs = {
           ...inquilino.documentos,
-          [`${type}_url`]: ""
+          [`${confirmDelete.type}_url`]: ""
         };
-        await saveInquilino({
-          ...inquilino,
-          documentos: updatedDocs
-        });
-        alert(`Documento ${type.toUpperCase()} desactivado.`);
-      } catch (error) {
-        console.error("Error al eliminar archivo activo:", error);
-        alert("Ocurrió un error al eliminar.");
       }
+
+      await saveInquilino({
+        ...inquilino,
+        documentos: updatedDocs
+      });
+      setStatusMessage("Documento actualizado correctamente.");
+      setConfirmDelete(null);
+    } catch (error) {
+      console.error("Error al eliminar archivo:", error);
+      setErrorMessage("Ocurrio un error al eliminar el documento. Intenta nuevamente.");
     }
   };
-
   // Helper para identificar la categoría del archivo
   const getFileCategory = (fileName, url) => {
     if (!fileName) return "unknown";
@@ -271,7 +257,7 @@ export default function DocumentUploadBox({ inquilino }) {
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleDeleteActive(type);
+                  setConfirmDelete({ mode: "active", type, label: type.toUpperCase() });
                 }}
                 className="py-2 px-3 rounded border border-red-200 text-status-danger bg-white hover:bg-red-50 text-xs font-bold transition-colors flex items-center justify-center z-20"
                 title="Desactivar documento"
@@ -301,6 +287,17 @@ export default function DocumentUploadBox({ inquilino }) {
           {renderUploadBox("contrato", "Contrato de Arrendamiento")}
         </div>
       </div>
+
+      {statusMessage && (
+        <div className="app-alert-success" role="status">
+          <span>{statusMessage}</span>
+        </div>
+      )}
+      {errorMessage && (
+        <div className="app-alert-error" role="alert">
+          <span>{errorMessage}</span>
+        </div>
+      )}
 
       {/* Historial de Documentos */}
       <div className="card-container space-y-4">
@@ -362,7 +359,7 @@ export default function DocumentUploadBox({ inquilino }) {
                             <Eye className="h-3.5 w-3.5" />
                           </button>
                           <button
-                            onClick={() => handleDeleteHistoryItem(doc.id, doc.tipo)}
+                            onClick={() => setConfirmDelete({ mode: "history", docId: doc.id, type: doc.tipo, label: doc.nombre })}
                             className="p-1.5 rounded bg-red-50 hover:bg-red-100 text-status-danger transition-colors"
                             title="Eliminar del historial"
                           >
@@ -534,6 +531,19 @@ export default function DocumentUploadBox({ inquilino }) {
           </div>
         </div>
       )}
+      <ConfirmDialog
+        open={!!confirmDelete}
+        danger
+        title="Eliminar documento"
+        message={
+          confirmDelete?.mode === "history"
+            ? `Se eliminara ${confirmDelete?.label || "este documento"} del historial.`
+            : `Se desactivara el documento ${confirmDelete?.label || ""} guardado para este inquilino.`
+        }
+        confirmLabel="Eliminar"
+        onCancel={() => setConfirmDelete(null)}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

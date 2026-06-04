@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useApp } from "../context/AppContext";
 import { buildWhatsAppLink } from "../utils/WhatsAppLinkBuilder";
 import { jsPDF } from "jspdf";
+import ConfirmDialog from "../components/ui/ConfirmDialog";
 import { 
   Calculator, 
   Plus, 
@@ -59,6 +60,9 @@ export default function ServiciosCalculadora({ inquilino }) {
   const [seguridadSubtotal, setSeguridadSubtotal] = useState(15);
 
   const [saving, setSaving] = useState(false);
+  const [confirmDeletePeriod, setConfirmDeletePeriod] = useState(null);
+  const [formError, setFormError] = useState("");
+  const [formMessage, setFormMessage] = useState("");
 
   // Obtener tarifas de configuración
   const tarifaLuz = config?.tarifas?.luz || 1.0;
@@ -150,8 +154,10 @@ export default function ServiciosCalculadora({ inquilino }) {
 
   const handleSave = async (e) => {
     e.preventDefault();
+    setFormError("");
+    setFormMessage("");
     if (!mesAnio) {
-      alert("Ingrese el periodo de cobro (Mes-Año)");
+      setFormError("Ingrese el periodo de cobro en formato Mes-Año.");
       return;
     }
 
@@ -185,20 +191,20 @@ export default function ServiciosCalculadora({ inquilino }) {
 
       const saved = await saveMensualidad(payload);
       setSelectedMens(saved);
-      alert("Periodo de facturación guardado correctamente.");
+      setFormMessage("Periodo de facturación guardado correctamente.");
     } catch (error) {
       console.error("Error al guardar mensualidad:", error);
-      alert("Ocurrió un error al guardar.");
+      setFormError("Ocurrió un error al guardar el periodo. Intenta nuevamente.");
     } finally {
       setSaving(false);
     }
   };
 
-  const handleDeletePeriod = async (id) => {
-    if (window.confirm("¿Está seguro de que desea eliminar este periodo de cobro?")) {
-      await deleteMensualidad(id);
-      setSelectedMens(null);
-    }
+  const handleDeletePeriod = async () => {
+    if (!confirmDeletePeriod) return;
+    await deleteMensualidad(confirmDeletePeriod.id);
+    setSelectedMens(null);
+    setConfirmDeletePeriod(null);
   };
 
   // ================= GENERACIÓN DE PDF A5 (jspdf) =================
@@ -413,7 +419,7 @@ export default function ServiciosCalculadora({ inquilino }) {
           </h4>
           {!isNew && (
             <button
-              onClick={() => handleDeletePeriod(selectedMens.id)}
+              onClick={() => setConfirmDeletePeriod(selectedMens)}
               className="p-1 text-red-500 hover:bg-red-50 rounded"
               title="Eliminar este periodo"
             >
@@ -421,6 +427,17 @@ export default function ServiciosCalculadora({ inquilino }) {
             </button>
           )}
         </div>
+
+        {formMessage && (
+          <div className="app-alert-success" role="status">
+            <span>{formMessage}</span>
+          </div>
+        )}
+        {formError && (
+          <div className="app-alert-error" role="alert">
+            <span>{formError}</span>
+          </div>
+        )}
 
         {!prop ? (
           <div className="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-lg flex items-start gap-3">
@@ -639,6 +656,15 @@ export default function ServiciosCalculadora({ inquilino }) {
           </form>
         )}
       </div>
+      <ConfirmDialog
+        open={!!confirmDeletePeriod}
+        danger
+        title="Eliminar periodo"
+        message={`Se eliminará el periodo ${confirmDeletePeriod?.mes_anio}. Esta acción no se puede deshacer.`}
+        confirmLabel="Eliminar"
+        onCancel={() => setConfirmDeletePeriod(null)}
+        onConfirm={handleDeletePeriod}
+      />
     </div>
   );
 }

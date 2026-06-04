@@ -16,6 +16,8 @@ export default function CuentasBancariasForm() {
   const [aguaTarifa, setAguaTarifa] = useState("");
 
   const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState("");
+  const [formSuccess, setFormSuccess] = useState("");
 
   useEffect(() => {
     if (config) {
@@ -33,8 +35,10 @@ export default function CuentasBancariasForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormError("");
+    setFormSuccess("");
     if (!titular) {
-      alert("El nombre del titular es obligatorio.");
+      setFormError("El nombre del titular es obligatorio.");
       return;
     }
 
@@ -56,10 +60,10 @@ export default function CuentasBancariasForm() {
       };
 
       await saveConfig(payload);
-      alert("Configuración de cobros guardada correctamente.");
+      setFormSuccess("Configuración de cobros guardada correctamente.");
     } catch (error) {
       console.error("Error al guardar configuración:", error);
-      alert("Ocurrió un error al guardar.");
+      setFormError("Ocurrió un error al guardar. Intenta nuevamente.");
     } finally {
       setSaving(false);
     }
@@ -67,6 +71,16 @@ export default function CuentasBancariasForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {formError && (
+        <div className="app-alert-error" role="alert">
+          <span>{formError}</span>
+        </div>
+      )}
+      {formSuccess && (
+        <div className="app-alert-success" role="status">
+          <span>{formSuccess}</span>
+        </div>
+      )}
       {/* 1. DATOS TITULAR */}
       <div className="card-container space-y-4">
         <div className="flex items-center gap-2 border-b border-slate-100 pb-3 mb-2">

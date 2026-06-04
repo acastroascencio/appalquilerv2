@@ -12,6 +12,7 @@ export default function DeptoFormModal({ deptoToEdit, onClose }) {
   const [cocina, setCocina] = useState(true);
   const [fotos, setFotos] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState("");
 
   useEffect(() => {
     if (deptoToEdit) {
@@ -50,11 +51,12 @@ export default function DeptoFormModal({ deptoToEdit, onClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!identificador || !costoBase) {
-      alert("Por favor rellene todos los campos requeridos.");
+      setFormError("Completa el identificador y el costo base antes de guardar.");
       return;
     }
 
     setSaving(true);
+    setFormError("");
     try {
       const payload = {
         id: deptoToEdit?.id || null,
@@ -73,7 +75,7 @@ export default function DeptoFormModal({ deptoToEdit, onClose }) {
       onClose();
     } catch (error) {
       console.error("Error al guardar propiedad:", error);
-      alert("Ocurrió un error al guardar.");
+      setFormError("Ocurrió un error al guardar. Revisa los datos e intenta nuevamente.");
     } finally {
       setSaving(false);
     }
@@ -96,9 +98,14 @@ export default function DeptoFormModal({ deptoToEdit, onClose }) {
         </div>
 
         {/* Formulario */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto max-h-[75vh]">
+        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-5 overflow-y-auto max-h-[75vh]">
+          {formError && (
+            <div className="app-alert-error" role="alert">
+              <span>{formError}</span>
+            </div>
+          )}
           {/* Identificador & Costo Base */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="label-text">Identificador *</label>
               <input 
@@ -140,21 +147,21 @@ export default function DeptoFormModal({ deptoToEdit, onClose }) {
               />
             </div>
 
-            <div className="flex items-center gap-6 pt-1">
-              <label className="flex items-center gap-2 cursor-pointer">
+            <div className="grid grid-cols-1 gap-3 pt-1 sm:grid-cols-2">
+              <label className="flex min-h-12 items-center gap-3 rounded-lg border border-slate-200 bg-white px-3 cursor-pointer">
                 <input 
                   type="checkbox" 
-                  className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 h-4 w-4"
+                  className="h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                   checked={banoPropio}
                   onChange={(e) => setBanoPropio(e.target.checked)}
                 />
                 <span className="text-sm font-semibold text-slate-700">¿Tiene Baño Propio?</span>
               </label>
 
-              <label className="flex items-center gap-2 cursor-pointer">
+              <label className="flex min-h-12 items-center gap-3 rounded-lg border border-slate-200 bg-white px-3 cursor-pointer">
                 <input 
                   type="checkbox" 
-                  className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 h-4 w-4"
+                  className="h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                   checked={cocina}
                   onChange={(e) => setCocina(e.target.checked)}
                 />
@@ -201,18 +208,18 @@ export default function DeptoFormModal({ deptoToEdit, onClose }) {
           </div>
 
           {/* Botones de Acción */}
-          <div className="flex items-center gap-3 pt-3 border-t border-slate-100">
+          <div className="grid grid-cols-1 gap-3 pt-3 border-t border-slate-100 sm:grid-cols-2">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 btn-secondary text-xs"
+              className="btn-secondary"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="flex-1 btn-primary text-xs font-bold"
+              className="btn-primary"
             >
               {saving ? "Guardando..." : "Guardar Departamento"}
             </button>

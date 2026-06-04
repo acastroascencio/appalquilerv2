@@ -5,7 +5,7 @@ import {
   AlertCircle, FileText, Upload, Calendar, AlertTriangle, Download, Eye 
 } from "lucide-react";
 import { registrarLogSistema } from "../utils/logger";
-
+import ConfirmDialog from "./ConfirmDialog";
 
 export default function Inquilinos({ sesion }) {
   const adminId = sesion?.user?.id;
@@ -41,7 +41,10 @@ export default function Inquilinos({ sesion }) {
 
   // Estados de control
   const [errorAccion, setErrorAccion] = useState("");
+  const [mensajeAccion, setMensajeAccion] = useState("");
   const [guardando, setGuardando] = useState(false);
+  const [inquilinoAEliminar, setInquilinoAEliminar] = useState(null);
+  const [docAEliminar, setDocAEliminar] = useState(null);
 
   // Requerimientos de formato y carga de documentos
   const ALLOWED_EXTENSIONS = ["docx", "doc", "pdf", "png", "jpg", "jpj", "jpeg"];
@@ -50,7 +53,7 @@ export default function Inquilinos({ sesion }) {
     if (!file) return false;
     const ext = file.name.split('.').pop().toLowerCase();
     if (!ALLOWED_EXTENSIONS.includes(ext)) {
-      alert(`Formato de archivo no permitido.\nSolo se aceptan: .docx, .doc, .pdf, .png, .jpg, .jpj, .jpeg`);
+      setErrorAccion("Formato no permitido. Solo se aceptan .docx, .doc, .pdf, .png, .jpg, .jpj y .jpeg.");
       return false;
     }
     return true;
@@ -111,10 +114,10 @@ export default function Inquilinos({ sesion }) {
           else setContratoBase64(lector.result);
           setHistorialDocs(updatedHistorial);
 
-          alert(`Archivo ${tipo.toUpperCase()} guardado directamente en la base de datos con éxito.`);
+          setMensajeAccion(`Archivo ${tipo.toUpperCase()} guardado directamente en la base de datos.`);
         } catch (error) {
           console.error("Error al guardar archivo en base de datos:", error);
-          alert("Ocurrió un error al guardar en la base de datos.");
+          setErrorAccion("Ocurrio un error al guardar el documento en la base de datos.");
         }
       } else {
         // Registrar: Cargar en memoria temporal
@@ -124,7 +127,7 @@ export default function Inquilinos({ sesion }) {
           setContratoBase64(lector.result);
         }
         setHistorialDocs(prev => [...prev, newRecord]);
-        alert(`Archivo ${tipo.toUpperCase()} cargado temporalmente. Se guardará al registrar el inquilino.`);
+        setMensajeAccion(`Archivo ${tipo.toUpperCase()} cargado temporalmente. Se guardara al registrar el inquilino.`);
       }
 
       if (inputElement) inputElement.value = "";
@@ -166,7 +169,6 @@ export default function Inquilinos({ sesion }) {
   };
 
   const eliminarDelHistorial = async (docId, tipo) => {
-    if (window.confirm("¿Estás seguro de eliminar este documento del historial?")) {
       const nuevoHistorial = historialDocs.filter(d => d.id !== docId);
       
       let activoUrl = tipo === "dni" ? dniBase64 : contratoBase64;
@@ -220,10 +222,10 @@ export default function Inquilinos({ sesion }) {
           setDniBase64(tipo === "dni" ? activoUrl : dniBase64);
           setContratoBase64(tipo === "contrato" ? activoUrl : contratoBase64);
           setHistorialDocs(nuevoHistorial);
-          alert("Documento eliminado del historial y actualizado en la base de datos.");
+          setMensajeAccion("Documento eliminado del historial y actualizado en la base de datos.");
         } catch (error) {
           console.error("Error al eliminar del historial:", error);
-          alert("Ocurrió un error al guardar los cambios en la base de datos.");
+          setErrorAccion("Ocurrio un error al guardar los cambios en la base de datos.");
         }
       } else {
         // Modo Registro: Actualizar localmente
@@ -234,7 +236,6 @@ export default function Inquilinos({ sesion }) {
         }
         setHistorialDocs(nuevoHistorial);
       }
-    }
   };
 
   const getFileCategory = (fileName, url) => {
@@ -472,7 +473,7 @@ export default function Inquilinos({ sesion }) {
   };
 
   const eliminarInquilino = async (id, nombreInq) => {
-    if (window.confirm(`¿Confirmas que deseas retirar al inquilino "${nombreInq}"?`)) {
+    if (true) {
       if (adminId.startsWith("demo-") || adminId === "admin-prueba-id") {
         const updatedList = listaInquilinos.filter(i => i.id !== id);
         setListaInquilinos(updatedList);
@@ -537,6 +538,12 @@ export default function Inquilinos({ sesion }) {
         <div className="p-5 bg-red-100 border-l-4 border-red-600 text-red-950 font-bold rounded-r-lg flex items-start gap-3 shadow-md" role="alert">
           <AlertCircle className="h-6 w-6 shrink-0 text-red-700" aria-hidden="true" />
           <div className="text-base font-extrabold leading-tight">{errorAccion}</div>
+        </div>
+      )}
+
+      {mensajeAccion && (
+        <div className="alerta-exito-movil" role="status">
+          <span className="text-base font-extrabold">{mensajeAccion}</span>
         </div>
       )}
 
@@ -646,7 +653,7 @@ export default function Inquilinos({ sesion }) {
                     <span>Editar</span>
                   </button>
                   <button
-                    onClick={() => eliminarInquilino(inq.id, inq.nombre)}
+                    onClick={() => setInquilinoAEliminar({ id: inq.id, nombre: inq.nombre })}
                     className="px-3 py-3 border border-red-200 text-red-600 bg-white hover:bg-red-50 rounded-lg flex items-center justify-center"
                     title="Eliminar inquilino"
                   >
@@ -693,7 +700,7 @@ export default function Inquilinos({ sesion }) {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="fila-formulario-movil">
                 <div>
                   <label htmlFor="cel-inq" className="etiqueta-gigante">Teléfono Celular *</label>
                   <input 
@@ -751,7 +758,7 @@ export default function Inquilinos({ sesion }) {
                 </label>
 
                 {tieneVehiculo && (
-                  <div className="grid grid-cols-3 gap-2 pt-1 page-enter text-xs">
+                  <div className="grid grid-cols-1 gap-3 pt-1 page-enter text-xs sm:grid-cols-3">
                     <div>
                       <label className="text-[10px] font-black text-slate-400 uppercase">Tipo</label>
                       <input 
@@ -790,7 +797,7 @@ export default function Inquilinos({ sesion }) {
               <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-4">
                 <span className="text-xs font-black uppercase text-slate-400 block">Adjuntar Documentos</span>
                 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="fila-formulario-movil">
                   <div>
                     <label className="text-xs font-bold text-slate-500 block mb-1">Cargar DNI</label>
                     <div className="relative border border-dashed border-slate-300 rounded-lg p-2.5 flex items-center justify-center bg-white hover:border-blue-500 cursor-pointer">
@@ -831,7 +838,7 @@ export default function Inquilinos({ sesion }) {
                         <div className="flex items-center gap-1.5 shrink-0">
                           <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase ${doc.tipo === "dni" ? "bg-blue-100 text-blue-800" : "bg-emerald-100 text-emerald-800"}`}>{doc.tipo}</span>
                           <button type="button" onClick={() => { setPreviewDoc(doc); setShowPreviewModal(true); }} className="p-1 bg-slate-100 text-slate-600 rounded hover:bg-slate-200"><Eye className="h-3.5 w-3.5" /></button>
-                          <button type="button" onClick={() => eliminarDelHistorial(doc.id, doc.tipo)} className="p-1 bg-red-50 text-red-600 rounded hover:bg-red-100"><Trash2 className="h-3.5 w-3.5" /></button>
+                          <button type="button" onClick={() => setDocAEliminar({ id: doc.id, tipo: doc.tipo, nombre: doc.nombre })} className="p-1 bg-red-50 text-red-600 rounded hover:bg-red-100"><Trash2 className="h-3.5 w-3.5" /></button>
                         </div>
                       </div>
                     ))}
@@ -844,7 +851,7 @@ export default function Inquilinos({ sesion }) {
                 <button
                   type="button"
                   onClick={() => setMostrarModal(false)}
-                  className="flex-1/2 boton-secundario-gigante text-base"
+                  className="flex-1 boton-secundario-gigante text-base"
                 >
                   Cancelar
                 </button>
@@ -861,6 +868,31 @@ export default function Inquilinos({ sesion }) {
           </div>
         </div>
       )}
+      <ConfirmDialog
+        open={!!inquilinoAEliminar}
+        danger
+        title="Retirar inquilino"
+        message={`Se retirará a ${inquilinoAEliminar?.nombre}. Verifica que esta acción sea correcta antes de continuar.`}
+        confirmLabel="Retirar"
+        onCancel={() => setInquilinoAEliminar(null)}
+        onConfirm={async () => {
+          await eliminarInquilino(inquilinoAEliminar?.id, inquilinoAEliminar?.nombre);
+          setInquilinoAEliminar(null);
+        }}
+      />
+      <ConfirmDialog
+        open={!!docAEliminar}
+        danger
+        title="Eliminar documento"
+        message={`Se eliminara ${docAEliminar?.nombre || "este documento"} del historial.`}
+        confirmLabel="Eliminar"
+        onCancel={() => setDocAEliminar(null)}
+        onConfirm={async () => {
+          await eliminarDelHistorial(docAEliminar?.id, docAEliminar?.tipo);
+          setDocAEliminar(null);
+        }}
+      />
+
 
       {/* 2. MODAL DE CONFIRMACIÓN DE CARGA */}
       {showConfirmModal && (
@@ -1025,3 +1057,4 @@ export default function Inquilinos({ sesion }) {
     </div>
   );
 }
+

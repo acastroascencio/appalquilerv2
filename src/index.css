@@ -2,53 +2,123 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer components {
-  /* Tarjetas base para la UI Bento Grid */
-  .card-container {
-    @apply bg-white border border-brand-border rounded-lg p-5 shadow-sm transition-all duration-200 hover:shadow-md;
-  }
-  
-  /* Botones del sistema */
-  .btn-primary {
-    @apply bg-status-info hover:bg-blue-600 text-white font-medium py-2 px-4 rounded transition-colors duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed;
-  }
-  
-  .btn-whatsapp {
-    @apply bg-[#25d366] hover:bg-[#1da851] text-white font-medium py-2 px-4 rounded transition-colors duration-200 flex items-center justify-center gap-2;
-  }
-
-  .btn-secondary {
-    @apply bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium py-2 px-4 rounded transition-colors duration-200 flex items-center justify-center gap-2;
-  }
-
-  .btn-danger {
-    @apply bg-status-danger hover:bg-red-600 text-white font-medium py-2 px-4 rounded transition-colors duration-200 flex items-center justify-center gap-2;
+@layer base {
+  :root {
+    color-scheme: light;
+    --app-bg: oklch(0.982 0.006 220);
+    --surface: oklch(0.996 0.004 220);
+    --surface-muted: oklch(0.958 0.01 220);
+    --text-strong: oklch(0.225 0.035 245);
+    --text: oklch(0.37 0.035 245);
+    --text-soft: oklch(0.55 0.03 245);
+    --border: oklch(0.885 0.018 230);
+    --primary: oklch(0.55 0.18 255);
+    --primary-strong: oklch(0.47 0.19 255);
+    --success: oklch(0.62 0.16 155);
+    --warning: oklch(0.72 0.16 72);
+    --danger: oklch(0.58 0.2 28);
+    --info: oklch(0.62 0.15 232);
   }
 
-  /* Formularios */
-  .input-field {
-    @apply mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-status-info focus:ring focus:ring-status-info focus:ring-opacity-50 bg-brand-light text-slate-800;
+  html {
+    font-size: 18px;
   }
 
-  .label-text {
-    @apply block text-sm font-semibold text-slate-700 mb-1;
+  body {
+    @apply bg-slate-50 text-slate-800 antialiased;
   }
 
-  /* Badges de estado */
-  .badge-success {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800;
-  }
-  
-  .badge-danger {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800;
-  }
-
-  .badge-warning {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800;
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    @apply focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-200 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50;
   }
 }
 
-/* Transiciones personalizadas */
+@layer components {
+  .card-container {
+    @apply bg-white border border-brand-border rounded-lg p-5 shadow-sm transition-all duration-200;
+  }
+  
+  .surface-panel {
+    @apply bg-white border border-slate-200 rounded-lg shadow-sm;
+  }
+
+  .section-heading {
+    @apply text-lg sm:text-xl font-extrabold tracking-tight text-slate-950;
+  }
+
+  .section-subtitle {
+    @apply text-sm sm:text-base font-semibold text-slate-500 leading-relaxed;
+  }
+
+  .btn-primary {
+    @apply min-h-12 bg-blue-700 hover:bg-blue-800 text-white font-extrabold py-3 px-5 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  
+  .btn-whatsapp {
+    @apply min-h-12 bg-[#25d366] hover:bg-[#1da851] text-white font-extrabold py-3 px-5 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2;
+  }
+
+  .btn-secondary {
+    @apply min-h-12 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 font-extrabold py-3 px-5 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2;
+  }
+
+  .btn-danger {
+    @apply min-h-12 bg-red-600 hover:bg-red-700 text-white font-extrabold py-3 px-5 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .input-field {
+    @apply mt-1 block w-full min-h-12 rounded-lg border-slate-300 bg-white px-4 py-3 text-base font-semibold text-slate-800 shadow-sm transition-colors focus:border-blue-700 focus:ring focus:ring-blue-200;
+  }
+
+  .label-text {
+    @apply block text-sm sm:text-base font-extrabold text-slate-700 mb-1.5;
+  }
+
+  .helper-text {
+    @apply mt-1.5 block text-sm font-semibold text-slate-500;
+  }
+
+  .field-error {
+    @apply mt-1.5 block text-sm font-extrabold text-red-700;
+  }
+
+  .app-alert {
+    @apply rounded-lg border p-4 text-sm sm:text-base font-bold leading-relaxed flex items-start gap-3;
+  }
+
+  .app-alert-error {
+    @apply app-alert border-red-200 bg-red-50 text-red-950;
+  }
+
+  .app-alert-success {
+    @apply app-alert border-emerald-200 bg-emerald-50 text-emerald-950;
+  }
+
+  .app-alert-warning {
+    @apply app-alert border-amber-200 bg-amber-50 text-amber-950;
+  }
+
+  .badge-success {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-extrabold bg-green-100 text-green-900 border border-green-200;
+  }
+  
+  .badge-danger {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-extrabold bg-red-100 text-red-900 border border-red-200;
+  }
+
+  .badge-warning {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-extrabold bg-amber-100 text-amber-900 border border-amber-200;
+  }
+
+  .mobile-record-card {
+    @apply rounded-lg border border-slate-200 bg-white p-4 shadow-sm space-y-3;
+  }
+}
+
 .page-enter {
   animation: fadeIn 0.3s ease-out forwards;
 }

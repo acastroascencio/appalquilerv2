@@ -434,14 +434,14 @@ export default function Consumo({ sesion }) {
       </div>
 
       {errorGuardado && (
-        <div className="p-5 bg-red-100 border-l-4 border-red-600 text-red-950 font-bold rounded-r-lg flex items-start gap-3 shadow-md" role="alert">
+        <div className="alerta-error-movil" role="alert">
           <AlertCircle className="h-6 w-6 shrink-0 text-red-700" aria-hidden="true" />
           <div className="text-base font-extrabold leading-tight">{errorGuardado}</div>
         </div>
       )}
 
       {exitoGuardado && (
-        <div className="p-5 bg-green-100 border-l-4 border-green-600 text-green-950 font-bold rounded-r-lg flex flex-col gap-4 shadow-md" role="status">
+        <div className="alerta-exito-movil flex-col gap-4" role="status">
           <div className="flex items-start gap-3">
             <CheckCircle className="h-6 w-6 shrink-0 text-green-700" aria-hidden="true" />
             <div>

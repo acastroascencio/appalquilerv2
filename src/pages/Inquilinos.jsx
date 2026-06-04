@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useApp } from "../context/AppContext";
 import InquilinoDetail from "./InquilinoDetail";
-import { Users, PlusCircle, Eye, Trash2, Phone, Building, Car } from "lucide-react";
+import { Users, PlusCircle, Eye, Trash2, Phone, Building, Car, X } from "lucide-react";
+import ConfirmDialog from "../components/ui/ConfirmDialog";
 
 export default function Inquilinos() {
   const { 
@@ -24,6 +25,9 @@ export default function Inquilinos() {
   const [cocheraMonto, setCocheraMonto] = useState("");
   
   const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState("");
+  const [formSuccess, setFormSuccess] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   // Redirigir a Ficha Detallada si hay selección
   if (selectedInquilinoId) {
@@ -35,8 +39,10 @@ export default function Inquilinos() {
 
   const handleAddInquilino = async (e) => {
     e.preventDefault();
+    setFormError("");
+    setFormSuccess("");
     if (!nombre || !telefono || !propiedadId) {
-      alert("Por favor llene los campos obligatorios.");
+      setFormError("Completa nombre, teléfono y departamento antes de registrar.");
       return;
     }
 
@@ -68,19 +74,19 @@ export default function Inquilinos() {
       setVehiculoPlaca("");
       setCocheraMonto("");
       setShowAddModal(false);
-      alert("Inquilino registrado con éxito.");
+      setFormSuccess("Inquilino registrado con éxito.");
     } catch (error) {
       console.error("Error al añadir inquilino:", error);
-      alert("Ocurrió un error al guardar.");
+      setFormError("Ocurrió un error al guardar. Intenta nuevamente.");
     } finally {
       setSaving(false);
     }
   };
 
-  const handleDelete = async (id, nombre) => {
-    if (window.confirm(`¿Confirmas que deseas retirar al inquilino "${nombre}"? El departamento asignado se liberará.`)) {
-      await deleteInquilino(id);
-    }
+  const handleDelete = async () => {
+    if (!confirmDelete) return;
+    await deleteInquilino(confirmDelete.id);
+    setConfirmDelete(null);
   };
 
   return (
@@ -98,8 +104,12 @@ export default function Inquilinos() {
         </div>
 
         <button
-          onClick={() => setShowAddModal(true)}
-          className="btn-primary text-sm font-semibold py-2.5 px-4 shadow-md shadow-blue-500/10 flex items-center gap-2 self-start sm:self-auto"
+          onClick={() => {
+            setFormError("");
+            setFormSuccess("");
+            setShowAddModal(true);
+          }}
+          className="btn-primary self-start sm:self-auto"
         >
           <PlusCircle className="h-4.5 w-4.5" />
           <span>Registrar Inquilino</span>
@@ -112,7 +122,68 @@ export default function Inquilinos() {
           👥 No hay inquilinos registrados. ¡Comienza agregando uno arriba!
         </div>
       ) : (
-        <div className="card-container overflow-hidden">
+        <div className="space-y-3">
+          <div className="space-y-3 md:hidden">
+            {inquilinos.map((inq) => {
+              const prop = propiedades.find(p => p.id === inq.propiedad_id);
+
+              return (
+                <article key={inq.id} className="mobile-record-card">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h4 className="text-lg font-black leading-tight text-slate-950">{inq.nombre}</h4>
+                      <p className="mt-1 flex items-center gap-1.5 text-sm font-bold text-slate-600">
+                        <Phone className="h-4 w-4 text-slate-400" aria-hidden="true" />
+                        {inq.telefono}
+                      </p>
+                    </div>
+                    {prop ? (
+                      <span className="badge-success">Depto {prop.identificador}</span>
+                    ) : (
+                      <span className="badge-danger">Sin asignar</span>
+                    )}
+                  </div>
+
+                  <dl className="grid grid-cols-2 gap-3 rounded-lg bg-slate-50 p-3">
+                    <div>
+                      <dt className="text-xs font-extrabold uppercase text-slate-500">Garantía</dt>
+                      <dd className="text-base font-black text-slate-900">
+                        S/ {Number(inq.garantia_monto).toFixed(2)}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs font-extrabold uppercase text-slate-500">Vehículo</dt>
+                      <dd className="text-base font-black text-slate-900">
+                        {inq.vehiculo?.tiene_vehiculo ? inq.vehiculo.placa : "No aplica"}
+                      </dd>
+                    </div>
+                  </dl>
+
+                  <div className="grid grid-cols-[1fr_auto] gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedInquilinoId(inq.id)}
+                      className="btn-primary"
+                    >
+                      <Eye className="h-5 w-5" aria-hidden="true" />
+                      <span>Ver ficha</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConfirmDelete({ id: inq.id, nombre: inq.nombre })}
+                      className="btn-danger px-4"
+                      title="Eliminar inquilino"
+                    >
+                      <Trash2 className="h-5 w-5" aria-hidden="true" />
+                      <span className="sr-only">Eliminar</span>
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+
+          <div className="card-container hidden overflow-hidden md:block">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -173,7 +244,7 @@ export default function Inquilinos() {
                           </button>
                           
                           <button
-                            onClick={() => handleDelete(inq.id, inq.nombre)}
+                            onClick={() => setConfirmDelete({ id: inq.id, nombre: inq.nombre })}
                             className="p-2 rounded border border-red-200 text-status-danger bg-white hover:bg-red-50 transition-colors"
                             title="Eliminar inquilino"
                           >
@@ -187,6 +258,7 @@ export default function Inquilinos() {
               </tbody>
             </table>
           </div>
+          </div>
         </div>
       )}
 
@@ -198,15 +270,28 @@ export default function Inquilinos() {
             <div className="bg-slate-900 text-white p-5 flex items-center justify-between">
               <h4 className="font-extrabold text-base tracking-wide">Registrar Nuevo Arrendatario</h4>
               <button 
-                onClick={() => setShowAddModal(false)}
+                onClick={() => {
+                  setFormError("");
+                  setShowAddModal(false);
+                }}
                 className="p-1 rounded text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
               >
-                <Plus className="h-5 w-5 rotate-45" />
+                <X className="h-5 w-5" aria-hidden="true" />
               </button>
             </div>
 
             {/* Formulario */}
-            <form onSubmit={handleAddInquilino} className="p-6 space-y-4 overflow-y-auto max-h-[75vh]">
+            <form onSubmit={handleAddInquilino} className="p-5 sm:p-6 space-y-4 overflow-y-auto max-h-[75vh]">
+              {formError && (
+                <div className="app-alert-error" role="alert">
+                  <span>{formError}</span>
+                </div>
+              )}
+              {formSuccess && (
+                <div className="app-alert-success" role="status">
+                  <span>{formSuccess}</span>
+                </div>
+              )}
               <div>
                 <label className="label-text">Nombre Completo *</label>
                 <input 
@@ -219,7 +304,7 @@ export default function Inquilinos() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="label-text">Teléfono Movil *</label>
                   <input 
@@ -279,7 +364,7 @@ export default function Inquilinos() {
                 </label>
 
                 {tieneVehiculo && (
-                  <div className="grid grid-cols-3 gap-2 pt-1 page-enter">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1 page-enter">
                     <div>
                       <label className="text-[10px] font-bold text-slate-500">Tipo</label>
                       <input 
@@ -318,15 +403,18 @@ export default function Inquilinos() {
               <div className="flex items-center gap-3 pt-3 border-t border-slate-100">
                 <button
                   type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="flex-1 btn-secondary text-xs"
+                  onClick={() => {
+                    setFormError("");
+                    setShowAddModal(false);
+                  }}
+                  className="flex-1 btn-secondary"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={saving || deptosLibres.length === 0}
-                  className="flex-1 btn-primary text-xs font-bold"
+                  className="flex-1 btn-primary"
                 >
                   {saving ? "Guardando..." : "Registrar Inquilino"}
                 </button>
@@ -335,27 +423,15 @@ export default function Inquilinos() {
           </div>
         </div>
       )}
+      <ConfirmDialog
+        open={!!confirmDelete}
+        danger
+        title="Retirar inquilino"
+        message={`Se retirará a ${confirmDelete?.nombre} y el departamento asignado quedará disponible.`}
+        confirmLabel="Retirar"
+        onCancel={() => setConfirmDelete(null)}
+        onConfirm={handleDelete}
+      />
     </div>
-  );
-}
-
-// Icono Plus auxiliar
-function Plus(props) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M5 12h14" />
-      <path d="M12 5v14" />
-    </svg>
   );
 }

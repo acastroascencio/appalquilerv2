@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { clienteSupabase } from "../config/supabase";
 import { Shield, CreditCard, DollarSign, Save, LogOut, AlertCircle } from "lucide-react";
 import { registrarLogSistema } from "../utils/logger";
-
+import ConfirmDialog from "./ConfirmDialog";
 
 export default function MiCuenta({ sesion, setSesionActiva }) {
   const adminId = sesion?.user?.id;
@@ -25,6 +25,7 @@ export default function MiCuenta({ sesion, setSesionActiva }) {
   const [guardando, setGuardando] = useState(false);
   const [errorGuardado, setErrorGuardado] = useState("");
   const [exitoGuardado, setExitoGuardado] = useState(false);
+  const [confirmarSalida, setConfirmarSalida] = useState(false);
 
   useEffect(() => {
     async function cargarPerfil() {
@@ -187,14 +188,13 @@ export default function MiCuenta({ sesion, setSesionActiva }) {
   };
 
   const cerrarSesionApp = async () => {
-    if (window.confirm("¿Confirmas que deseas salir de tu cuenta?")) {
-      await registrarLogSistema(adminId, {
-        accion: "CERRAR_SESION",
-        descripcion: `El usuario "${nombreCompleto || adminId}" cerró sesión`
-      });
-      await clienteSupabase.auth.signOut();
-      setSesionActiva(null);
-    }
+    await registrarLogSistema(adminId, {
+      accion: "CERRAR_SESION",
+      descripcion: `El usuario "${nombreCompleto || adminId}" cerró sesión`
+    });
+    await clienteSupabase.auth.signOut();
+    setConfirmarSalida(false);
+    setSesionActiva(null);
   };
 
   return (
@@ -209,10 +209,7 @@ export default function MiCuenta({ sesion, setSesionActiva }) {
 
       {/* Cartel de Error Gigante */}
       {errorGuardado && (
-        <div 
-          className="p-5 bg-red-100 border-l-4 border-red-600 text-red-950 font-bold rounded-r-lg flex items-start gap-3 shadow-md"
-          role="alert"
-        >
+        <div className="alerta-error-movil" role="alert">
           <AlertCircle className="h-6 w-6 shrink-0 text-red-700" aria-hidden="true" />
           <div className="text-base font-extrabold leading-tight">
             {errorGuardado}
@@ -222,10 +219,7 @@ export default function MiCuenta({ sesion, setSesionActiva }) {
 
       {/* Mensaje de éxito */}
       {exitoGuardado && (
-        <div 
-          className="p-4 bg-green-100 border-l-4 border-green-600 text-green-950 font-bold rounded-r-lg shadow-sm"
-          role="status"
-        >
+        <div className="alerta-exito-movil" role="status">
           <span className="block font-black text-lg text-green-900 mb-1">¡Caja Fuerte Actualizada!</span>
           <span className="text-base font-extrabold">Tus métodos de pago y tarifas fueron guardados con éxito.</span>
         </div>
@@ -390,7 +384,7 @@ export default function MiCuenta({ sesion, setSesionActiva }) {
           {/* BOTÓN CERRAR SESIÓN GIGANTE */}
           <button
             type="button"
-            onClick={cerrarSesionApp}
+            onClick={() => setConfirmarSalida(true)}
             className="w-full boton-peligro-gigante mt-4 shadow-xl shadow-red-500/10"
           >
             <LogOut className="h-6 w-6" aria-hidden="true" />
@@ -399,6 +393,15 @@ export default function MiCuenta({ sesion, setSesionActiva }) {
 
         </form>
       )}
+      <ConfirmDialog
+        open={confirmarSalida}
+        danger
+        title="Cerrar sesión"
+        message="Saldrás de tu cuenta en este dispositivo. Podrás volver a ingresar con tus credenciales."
+        confirmLabel="Cerrar sesión"
+        onCancel={() => setConfirmarSalida(false)}
+        onConfirm={cerrarSesionApp}
+      />
     </div>
   );
 }

@@ -17,6 +17,8 @@ export default function DataBasicaForm({ inquilino }) {
   const [montoAsociacion, setMontoAsociacion] = useState("");
   
   const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState("");
+  const [formSuccess, setFormSuccess] = useState("");
 
   useEffect(() => {
     if (inquilino) {
@@ -39,8 +41,10 @@ export default function DataBasicaForm({ inquilino }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormError("");
+    setFormSuccess("");
     if (!nombre || !telefono || !propiedadId) {
-      alert("Por favor rellene los campos requeridos.");
+      setFormError("Completa nombre, teléfono y departamento antes de guardar.");
       return;
     }
 
@@ -61,10 +65,10 @@ export default function DataBasicaForm({ inquilino }) {
       };
 
       await saveInquilino(payload);
-      alert("Datos básicos actualizados con éxito.");
+      setFormSuccess("Datos básicos actualizados con éxito.");
     } catch (error) {
       console.error("Error al actualizar datos básicos:", error);
-      alert("Ocurrió un error al guardar.");
+      setFormError("Ocurrió un error al guardar. Intenta nuevamente.");
     } finally {
       setSaving(false);
     }
@@ -76,6 +80,17 @@ export default function DataBasicaForm({ inquilino }) {
         <User className="h-5 w-5 text-blue-500" />
         <h4 className="font-extrabold text-slate-800 text-sm uppercase tracking-wide">Datos Básicos y Cochera</h4>
       </div>
+
+      {formError && (
+        <div className="app-alert-error" role="alert">
+          <span>{formError}</span>
+        </div>
+      )}
+      {formSuccess && (
+        <div className="app-alert-success" role="status">
+          <span>{formSuccess}</span>
+        </div>
+      )}
 
       {/* Grid General */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -1,4 +1,3 @@
-import React from "react";
 import Sidebar from "./Sidebar";
 import { useApp } from "../../context/AppContext";
 import { User } from "lucide-react";
@@ -7,48 +6,52 @@ export default function AppLayout({ children }) {
   const { config, activePage, selectedInquilinoId } = useApp();
 
   const getPageTitle = () => {
-    if (selectedInquilinoId) return "Ficha Detallada del Inquilino";
+    if (selectedInquilinoId) return "Ficha detallada del inquilino";
     switch (activePage) {
-      case "dashboard": return "Dashboard Resumen";
-      case "departamentos": return "Gestión de Departamentos";
-      case "inquilinos": return "Gestión de Inquilinos";
-      case "consumo": return "Registro de Consumo (Supabase)";
-      case "configuracion": return "Configuración del Sistema";
-      default: return "AlquilerApp";
+      case "dashboard":
+        return "Resumen principal";
+      case "departamentos":
+        return "Gestión de departamentos";
+      case "inquilinos":
+        return "Gestión de inquilinos";
+      case "consumo":
+        return "Registro de consumo";
+      case "configuracion":
+        return "Configuración del sistema";
+      default:
+        return "AlquilerApp";
     }
   };
 
   return (
-    <div className="flex bg-slate-50 min-h-screen font-sans text-slate-800 antialiased">
-      {/* Sidebar Fijo */}
+    <div className="flex min-h-screen bg-slate-50 font-sans text-slate-800 antialiased">
       <Sidebar />
 
-      {/* Área de Contenido Principal */}
-      <div className="flex-1 flex flex-col min-h-screen">
-        {/* Cabecera / Header Superior */}
-        <header className="h-16 bg-white border-b border-slate-200 px-8 flex items-center justify-between shadow-sm">
-          <div>
-            <h2 className="text-xl font-bold text-slate-900 tracking-tight transition-all duration-200">
+      <div className="flex min-h-screen min-w-0 flex-1 flex-col pb-24 lg:pb-0">
+        <header className="sticky top-0 z-30 flex min-h-16 items-center justify-between border-b border-slate-200 bg-white/95 px-4 shadow-sm backdrop-blur sm:px-6 lg:px-8">
+          <div className="min-w-0">
+            <p className="text-xs font-extrabold uppercase tracking-wide text-blue-700 lg:hidden">
+              AlquilerApp
+            </p>
+            <h2 className="truncate text-lg font-extrabold tracking-tight text-slate-950 sm:text-xl">
               {getPageTitle()}
             </h2>
           </div>
 
-          {/* Información del Administrador */}
-          <div className="flex items-center gap-3">
-            <div className="text-right hidden sm:block">
-              <p className="text-sm font-semibold text-slate-800">
+          <div className="flex items-center gap-3 pl-3">
+            <div className="hidden text-right sm:block">
+              <p className="max-w-52 truncate text-sm font-extrabold text-slate-800">
                 {config?.titular || "Administrador"}
               </p>
               <p className="text-xs font-medium text-slate-500">Propietario</p>
             </div>
-            <div className="h-10 w-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 shadow-inner">
-              <User className="h-5 w-5" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-slate-600 shadow-inner">
+              <User className="h-5 w-5" aria-hidden="true" />
             </div>
           </div>
         </header>
 
-        {/* Panel de Contenido */}
-        <main className="flex-1 p-8 overflow-y-auto max-w-7xl w-full mx-auto page-enter">
+        <main className="mx-auto flex-1 w-full max-w-7xl overflow-y-auto px-4 py-5 sm:px-6 sm:py-7 lg:p-8 page-enter">
           {children}
         </main>
       </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { clienteSupabase } from "../config/supabase";
 import { PlusCircle, Building, X, Upload, Trash2, Edit, AlertCircle } from "lucide-react";
 import { registrarLogSistema } from "../utils/logger";
-
+import ConfirmDialog from "./ConfirmDialog";
 
 export default function Departamentos({ sesion }) {
   const adminId = sesion?.user?.id;
@@ -23,6 +23,7 @@ export default function Departamentos({ sesion }) {
   // Estados de control
   const [errorAccion, setErrorAccion] = useState("");
   const [guardando, setGuardando] = useState(false);
+  const [deptoAEliminar, setDeptoAEliminar] = useState(null);
 
   const cargarDepartamentos = async () => {
     if (!adminId) return;
@@ -209,7 +210,7 @@ export default function Departamentos({ sesion }) {
   };
 
   const eliminarDepto = async (id, ident) => {
-    if (window.confirm(`¿Confirmas que deseas eliminar el departamento "${ident}"?`)) {
+    if (true) {
       if (adminId.startsWith("demo-") || adminId === "admin-prueba-id") {
         setListaDeptos(prev => prev.filter(d => d.id !== id));
         await registrarLogSistema(adminId, {
@@ -342,7 +343,7 @@ export default function Departamentos({ sesion }) {
                     <span>Editar</span>
                   </button>
                   <button
-                    onClick={() => eliminarDepto(prop.id, prop.identificador)}
+                    onClick={() => setDeptoAEliminar({ id: prop.id, ident: prop.identificador })}
                     className="px-3 py-3 border border-red-200 text-red-600 bg-white hover:bg-red-50 rounded-lg flex items-center justify-center"
                     title="Eliminar departamento"
                   >
@@ -501,6 +502,18 @@ export default function Departamentos({ sesion }) {
           </div>
         </div>
       )}
+      <ConfirmDialog
+        open={!!deptoAEliminar}
+        danger
+        title="Eliminar inmueble"
+        message={`Se eliminará ${deptoAEliminar?.ident}. Esta acción no se puede deshacer.`}
+        confirmLabel="Eliminar"
+        onCancel={() => setDeptoAEliminar(null)}
+        onConfirm={async () => {
+          await eliminarDepto(deptoAEliminar?.id, deptoAEliminar?.ident);
+          setDeptoAEliminar(null);
+        }}
+      />
     </div>
   );
 }
