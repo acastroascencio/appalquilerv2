@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { AlertCircle, Building, KeyRound, Mail } from "lucide-react";
 
 const demoAccounts = [
@@ -59,10 +59,10 @@ export default function Login({ setSesionActiva }) {
   };
 
   return (
-    <main className="flex min-h-screen flex-col justify-center bg-slate-50 px-6 py-12 font-sans">
+    <main className="flex min-h-screen flex-col justify-center px-6 py-12 font-sans">
       <div className="mx-auto w-full max-w-md space-y-8">
         <div className="text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-700 text-white shadow-xl shadow-blue-500/20" aria-hidden="true">
+          <div className="mx-auto flex h-[72px] w-[72px] items-center justify-center rounded-2xl bg-blue-700 text-white shadow-xl shadow-blue-900/15" aria-hidden="true">
             <Building className="h-9 w-9" />
           </div>
           <h1 className="mt-6 text-3xl font-black tracking-tight text-slate-950">AlquilerApp</h1>
@@ -81,7 +81,7 @@ export default function Login({ setSesionActiva }) {
           </div>
         )}
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xl">
+        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-300/50">
           <h2 className="mb-6 border-b border-slate-100 pb-3 text-center text-2xl font-black text-slate-950">
             Entrar a la Cuenta
           </h2>
@@ -139,7 +139,7 @@ export default function Login({ setSesionActiva }) {
                     key={account.id}
                     type="button"
                     onClick={() => activarSesion({ user: { id: account.id, nombre: account.name } })}
-                    className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-left transition-colors hover:bg-slate-100"
+                    className="flex min-h-16 w-full items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-left transition-colors hover:bg-slate-100"
                   >
                     <div className="flex items-center gap-3">
                       <div className={`${account.colorClass} flex h-9 w-9 items-center justify-center rounded-lg text-sm font-black text-white`}>

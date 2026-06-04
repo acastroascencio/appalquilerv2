@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -13,8 +13,7 @@ import {
   TrendingUp, 
   AlertCircle, 
   FileText,
-  CheckCircle,
-  HelpCircle
+  CheckCircle
 } from "lucide-react";
 
 // Inicialización de Supabase segura para evitar crashes en producción si no hay variables de entorno
@@ -297,17 +296,17 @@ export default function RegistroConsumo() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8 font-sans antialiased text-slate-900">
-      <div className="max-w-3xl mx-auto">
+    <div className="space-y-6 text-slate-900">
+      <div className="mx-auto max-w-4xl">
         {/* Cabecera del Módulo */}
-        <header className="mb-8 flex items-center gap-4 bg-slate-950 p-6 rounded-2xl shadow-xl text-white">
-          <div className="bg-blue-600 p-4 rounded-xl text-white shadow-lg shadow-blue-500/20" aria-hidden="true">
-            <Calculator className="h-10 w-10" />
+        <header className="mb-6 flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/60 sm:flex-row sm:items-center">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-blue-700 text-white shadow-lg shadow-blue-900/10" aria-hidden="true">
+            <Calculator className="h-7 w-7" />
           </div>
           <div>
-            <h1 className="text-3xl font-black tracking-tight text-white">Registro de Consumo</h1>
-            <p className="text-sm font-semibold text-slate-400">
-              AlquilerApp • Periodo de Facturación: <strong className="text-blue-400 font-bold">{mesCapitalizado}</strong>
+            <h1 className="text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">Registro de Consumo</h1>
+            <p className="mt-1 text-base font-semibold text-slate-600">
+              AlquilerApp • Periodo de Facturación: <strong className="font-extrabold text-blue-700">{mesCapitalizado}</strong>
             </p>
           </div>
         </header>
@@ -315,7 +314,7 @@ export default function RegistroConsumo() {
         {/* Notificaciones de Estado */}
         {errorValidacion && (
           <div 
-            className="mb-6 p-4 bg-red-100 border-l-4 border-status-danger text-red-950 font-bold text-sm rounded-r-lg flex items-start gap-3 shadow-md"
+            className="app-alert-error mb-6"
             role="alert"
           >
             <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" aria-hidden="true" />
@@ -328,7 +327,7 @@ export default function RegistroConsumo() {
 
         {exitoGuardado && (
           <div 
-            className="mb-6 p-5 bg-emerald-100 border-l-4 border-status-success text-emerald-950 font-bold text-sm rounded-r-lg flex items-start gap-3 shadow-md"
+            className="app-alert-success mb-6"
             role="status"
           >
             <CheckCircle className="h-6 w-6 shrink-0 text-emerald-600" aria-hidden="true" />
@@ -341,7 +340,7 @@ export default function RegistroConsumo() {
                 href={generarWhatsAppEnlace()}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-3 w-full sm:w-auto px-8 py-4 bg-[#25d366] hover:bg-[#1da851] text-white font-extrabold text-base rounded-xl transition-all duration-200 shadow-lg shadow-emerald-500/20 focus:ring-4 focus:ring-emerald-500 focus:outline-none"
+                className="btn-whatsapp w-full sm:w-auto"
                 aria-label={`Enviar comprobante del mes de ${mesCapitalizado} a ${datosInquilino?.nombre} por WhatsApp`}
               >
                 <MessageSquare className="h-6 w-6" aria-hidden="true" />
@@ -352,9 +351,11 @@ export default function RegistroConsumo() {
         )}
 
         {/* Tarjeta de Formulario Principal */}
-        <section className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-xl">
-          <h2 className="text-xl font-extrabold text-slate-800 border-b border-slate-100 pb-4 mb-6 flex items-center gap-2">
-            <Lightbulb className="h-5 w-5 text-blue-500" aria-hidden="true" />
+        <section className="card-container p-6 sm:p-8">
+          <h2 className="mb-6 flex items-center gap-2.5 border-b border-slate-100 pb-4 text-xl font-black leading-tight text-slate-900">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
+              <Lightbulb className="h-6 w-6" aria-hidden="true" />
+            </span>
             <span>Datos del Recibo Mensual</span>
           </h2>
 
@@ -368,7 +369,7 @@ export default function RegistroConsumo() {
               <div className="relative">
                 <select
                   id="inquilino-select"
-                  className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-xl font-bold text-slate-800 focus:ring-4 focus:ring-blue-600 focus:border-blue-600 focus:bg-white focus:outline-none transition-all duration-200"
+                  className="input-field pl-11 pr-4 font-bold"
                   value={inquilinoSeleccionado}
                   onChange={(e) => setInquilinoSeleccionado(e.target.value)}
                   disabled={cargando}
@@ -381,7 +382,7 @@ export default function RegistroConsumo() {
                     </option>
                   ))}
                 </select>
-                <User className="absolute left-4 top-3.5 h-5 w-5 text-slate-400" aria-hidden="true" />
+                <User className="field-icon" aria-hidden="true" />
               </div>
               {cargando && <p className="text-xs font-semibold text-slate-400 animate-pulse">Buscando arrendatarios en Supabase...</p>}
             </div>
@@ -437,11 +438,11 @@ export default function RegistroConsumo() {
                   <input
                     id="lectura-anterior"
                     type="number"
-                    className="w-full pl-11 pr-4 py-3 bg-slate-100 border border-slate-200 rounded-xl font-bold text-slate-500 cursor-not-allowed focus:outline-none"
+                    className="input-field cursor-not-allowed bg-slate-100 pl-11 pr-4 text-slate-500"
                     value={lecturaAnterior}
                     readOnly
                   />
-                  <Lightbulb className="absolute left-4 top-3.5 h-5 w-5 text-slate-400" aria-hidden="true" />
+                  <Lightbulb className="field-icon" aria-hidden="true" />
                 </div>
                 <p className="text-[10px] font-bold text-slate-400 uppercase">Traída automáticamente desde historial</p>
               </div>
@@ -456,7 +457,7 @@ export default function RegistroConsumo() {
                     id="lectura-actual"
                     type="number"
                     className={twMerge(
-                      "w-full pl-11 pr-4 py-3 bg-slate-50 border rounded-xl font-extrabold text-slate-900 focus:ring-4 focus:outline-none transition-all duration-200",
+                      "input-field pl-11 pr-4 font-extrabold",
                       esLecturaInvalida
                         ? "border-status-danger focus:ring-red-100 focus:border-status-danger"
                         : "border-slate-300 focus:ring-blue-600 focus:border-blue-600 focus:bg-white"
@@ -470,7 +471,7 @@ export default function RegistroConsumo() {
                     min="0"
                     required
                   />
-                  <TrendingUp className="absolute left-4 top-3.5 h-5 w-5 text-slate-400" aria-hidden="true" />
+                  <TrendingUp className="field-icon" aria-hidden="true" />
                 </div>
                 {esLecturaInvalida && (
                   <p id="error-lectura-actual" className="text-xs font-bold text-status-danger">
@@ -490,7 +491,7 @@ export default function RegistroConsumo() {
                   id="tarifa-luz"
                   type="number"
                   step="0.01"
-                  className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-600 font-bold bg-slate-50"
+                  className="input-field bg-slate-50 text-sm text-slate-700"
                   value={precioUnitarioLuz}
                   onChange={(e) => setPrecioUnitarioLuz(Number(e.target.value) || 0)}
                   disabled={!inquilinoSeleccionado}
@@ -505,7 +506,7 @@ export default function RegistroConsumo() {
                   id="cuota-seguridad"
                   type="number"
                   step="0.1"
-                  className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-600 font-bold bg-slate-50"
+                  className="input-field bg-slate-50 text-sm text-slate-700"
                   value={seguridadCuota}
                   onChange={(e) => setSeguridadCuota(Number(e.target.value) || 0)}
                   disabled={!inquilinoSeleccionado}
@@ -552,7 +553,7 @@ export default function RegistroConsumo() {
               type="submit"
               disabled={guardando || !inquilinoSeleccionado || esLecturaInvalida}
               className={twMerge(
-                "w-full py-4.5 px-8 font-black text-lg tracking-wide rounded-2xl text-white transition-all duration-200 flex items-center justify-center gap-2.5 shadow-xl focus:ring-4 focus:ring-blue-500 focus:outline-none",
+                "w-full min-h-14 rounded-2xl px-8 py-4 text-lg font-black tracking-wide transition-all duration-200 flex items-center justify-center gap-2.5 shadow-xl focus:ring-4 focus:ring-blue-500 focus:outline-none",
                 guardando || !inquilinoSeleccionado || esLecturaInvalida
                   ? "bg-slate-300 cursor-not-allowed shadow-none"
                   : "bg-blue-700 hover:bg-blue-800 shadow-blue-500/10"
@@ -566,7 +567,7 @@ export default function RegistroConsumo() {
                 </>
               ) : (
                 <>
-                  <DollarSign className="h-6 w-6" aria-hidden="true" />
+                  <DollarSign className="h-6 w-6 shrink-0" aria-hidden="true" />
                   <span>Registrar y Emitir Liquidación</span>
                 </>
               )}
@@ -575,6 +576,6 @@ export default function RegistroConsumo() {
           </form>
         </section>
       </div>
-    </main>
+    </div>
   );
 }

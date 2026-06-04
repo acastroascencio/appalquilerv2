@@ -34,13 +34,13 @@ export default function Sidebar() {
           key={item.id}
           type="button"
           onClick={() => handleNavigation(item.id)}
-          className={`flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-lg px-1 py-2 text-[11px] font-extrabold transition-colors ${
+          className={`flex min-h-16 min-w-0 flex-1 flex-col items-center justify-center gap-1.5 rounded-xl px-1 py-2 text-center text-[11px] font-extrabold leading-tight transition-colors ${
             isActive ? "bg-blue-700 text-white" : "text-slate-500 hover:bg-slate-100"
           }`}
           aria-current={isActive ? "page" : undefined}
         >
-          <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
-          <span className="max-w-full truncate">{item.label}</span>
+          <Icon className="h-6 w-6 shrink-0" aria-hidden="true" />
+          <span className="block max-w-full truncate">{item.label}</span>
         </button>
       );
     }
@@ -50,14 +50,14 @@ export default function Sidebar() {
         key={item.id}
         type="button"
         onClick={() => handleNavigation(item.id)}
-        className={`flex min-h-12 w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-sm font-extrabold transition-all duration-200 ${
+        className={`flex min-h-14 w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-base font-extrabold transition-all duration-200 ${
           isActive
             ? "bg-blue-700 text-white shadow-md shadow-blue-950/20"
             : "text-slate-300 hover:bg-slate-800 hover:text-white"
         }`}
         aria-current={isActive ? "page" : undefined}
       >
-        <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
+        <Icon className="h-6 w-6 shrink-0" aria-hidden="true" />
         <span>{item.desktopLabel}</span>
       </button>
     );
@@ -67,7 +67,7 @@ export default function Sidebar() {
     <>
       <aside className="hidden min-h-screen w-72 shrink-0 flex-col bg-slate-950 text-white shadow-xl lg:flex">
         <div className="flex items-center gap-3 border-b border-slate-800 p-6">
-          <div className="rounded-lg bg-blue-700 p-2.5 text-white shadow-md">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-700 text-white shadow-md">
             <Building className="h-6 w-6" aria-hidden="true" />
           </div>
           <div>
@@ -86,7 +86,7 @@ export default function Sidebar() {
       </aside>
 
       <nav
-        className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 gap-1 border-t border-slate-200 bg-white/95 p-2 shadow-2xl backdrop-blur lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 grid min-h-[84px] grid-cols-5 gap-1.5 border-t border-slate-200 bg-white/95 px-2 pb-2 pt-2 shadow-2xl backdrop-blur lg:hidden"
         aria-label="Navegación principal móvil"
       >
         {menuItems.map((item) => renderItem(item, "mobile"))}

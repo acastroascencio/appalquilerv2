@@ -25,16 +25,16 @@ export default function AppLayout({ children, sesionActiva, onSignOut }) {
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-50 font-sans text-slate-800 antialiased">
+    <div className="flex min-h-screen font-sans text-slate-800 antialiased">
       <Sidebar />
 
       <div className="flex min-h-screen min-w-0 flex-1 flex-col pb-24 lg:pb-0">
-        <header className="sticky top-0 z-30 flex min-h-16 items-center justify-between border-b border-slate-200 bg-white/95 px-4 shadow-sm backdrop-blur sm:px-6 lg:px-8">
+        <header className="sticky top-0 z-30 flex min-h-20 items-center justify-between border-b border-slate-200 bg-white/95 px-4 shadow-sm shadow-slate-200/60 backdrop-blur sm:px-6 lg:px-8">
           <div className="min-w-0">
             <p className="text-xs font-extrabold uppercase tracking-wide text-blue-700 lg:hidden">
               AlquilerApp
             </p>
-            <h2 className="truncate text-lg font-extrabold tracking-tight text-slate-950 sm:text-xl">
+            <h2 className="truncate text-xl font-black tracking-tight text-slate-950 sm:text-2xl">
               {getPageTitle()}
             </h2>
           </div>
@@ -46,13 +46,13 @@ export default function AppLayout({ children, sesionActiva, onSignOut }) {
               </p>
               <p className="text-xs font-medium text-slate-500">Propietario</p>
             </div>
-            <div className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-slate-600 shadow-inner">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-slate-600 shadow-inner">
               <User className="h-5 w-5" aria-hidden="true" />
             </div>
             <button
               type="button"
               onClick={onSignOut}
-              className="hidden min-h-11 items-center justify-center gap-2 rounded-lg border border-red-200 bg-white px-3 py-2 text-sm font-extrabold text-red-700 transition-colors hover:bg-red-50 sm:flex"
+              className="hidden min-h-12 items-center justify-center gap-2 rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-extrabold text-red-700 transition-colors hover:bg-red-50 sm:flex"
               title="Cerrar sesión"
             >
               <LogOut className="h-4 w-4" aria-hidden="true" />

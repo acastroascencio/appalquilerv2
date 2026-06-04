@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useApp } from "../context/AppContext";
 import DataBasicaForm from "./DataBasicaForm";
 import DocumentUploadBox from "./DocumentUploadBox";
@@ -74,7 +74,7 @@ export default function InquilinoDetail() {
                   : "border-transparent text-slate-400 hover:text-slate-600"
               }`}
             >
-              <Icon className="h-4.5 w-4.5" />
+              <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
               <span>{t.label}</span>
             </button>
           );

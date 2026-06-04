@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useApp } from "../context/AppContext";
 import InquilinoDetail from "./InquilinoDetail";
 import { Users, PlusCircle, Eye, Trash2, Phone, Building, Car, X } from "lucide-react";
@@ -92,14 +92,14 @@ export default function Inquilinos() {
   return (
     <div className="space-y-6">
       {/* Cabecera y botón de acción */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/60 sm:flex-row sm:items-center">
         <div className="flex items-center gap-3">
-          <div className="h-12 w-12 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 shadow-sm">
-            <Users className="h-6 w-6" />
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-blue-50 text-blue-700 shadow-sm">
+            <Users className="h-7 w-7" aria-hidden="true" />
           </div>
           <div>
-            <h3 className="text-xl font-extrabold text-slate-900 tracking-tight">Inquilinos</h3>
-            <p className="text-xs font-semibold text-slate-400">Total: {inquilinos.length} arrendatario(s) activos</p>
+            <h3 className="text-2xl font-black tracking-tight text-slate-950">Inquilinos</h3>
+            <p className="text-sm font-semibold text-slate-600">Total: {inquilinos.length} arrendatario(s) activos</p>
           </div>
         </div>
 
@@ -111,7 +111,7 @@ export default function Inquilinos() {
           }}
           className="btn-primary self-start sm:self-auto"
         >
-          <PlusCircle className="h-4.5 w-4.5" />
+          <PlusCircle className="h-5 w-5" aria-hidden="true" />
           <span>Registrar Inquilino</span>
         </button>
       </div>

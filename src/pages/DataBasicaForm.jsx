@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useApp } from "../context/AppContext";
 import { Save, User, Phone, DollarSign, Car } from "lucide-react";
 
@@ -100,13 +100,13 @@ export default function DataBasicaForm({ inquilino }) {
           <div className="relative">
             <input 
               type="text" 
-              className="input-field pl-9" 
+              className="input-field pl-11"
               placeholder="Ej. Juan Pérez"
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
               required
             />
-            <User className="absolute left-3 top-3.5 h-4 w-4 text-slate-400" />
+            <User className="field-icon" aria-hidden="true" />
           </div>
         </div>
 
@@ -116,13 +116,13 @@ export default function DataBasicaForm({ inquilino }) {
           <div className="relative">
             <input 
               type="tel" 
-              className="input-field pl-9" 
+              className="input-field pl-11"
               placeholder="Ej. 987654321"
               value={telefono}
               onChange={(e) => setTelefono(e.target.value)}
               required
             />
-            <Phone className="absolute left-3 top-3.5 h-4 w-4 text-slate-400" />
+            <Phone className="field-icon" aria-hidden="true" />
           </div>
         </div>
 
@@ -132,13 +132,13 @@ export default function DataBasicaForm({ inquilino }) {
           <div className="relative">
             <input 
               type="number" 
-              className="input-field pl-9" 
+              className="input-field pl-11"
               placeholder="Ej. 1200"
               value={garantiaMonto}
               onChange={(e) => setGarantiaMonto(e.target.value)}
               min="0"
             />
-            <DollarSign className="absolute left-3 top-3.5 h-4 w-4 text-slate-400" />
+            <DollarSign className="field-icon" aria-hidden="true" />
           </div>
         </div>
 
@@ -218,7 +218,7 @@ export default function DataBasicaForm({ inquilino }) {
       <button
         type="submit"
         disabled={saving}
-        className="w-full btn-primary text-sm font-bold py-2.5 shadow-md shadow-blue-500/10 flex items-center justify-center gap-2"
+        className="w-full btn-primary text-sm font-bold shadow-md shadow-blue-500/10"
       >
         <Save className="h-4 w-4" />
         <span>{saving ? "Guardando..." : "Guardar Cambios Básicos"}</span>

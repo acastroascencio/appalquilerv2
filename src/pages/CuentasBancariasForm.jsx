@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useApp } from "../context/AppContext";
 import { Save, Shield, CreditCard, DollarSign } from "lucide-react";
 
@@ -214,9 +214,9 @@ export default function CuentasBancariasForm() {
       <button
         type="submit"
         disabled={saving}
-        className="w-full btn-primary text-sm font-bold py-3 shadow-md shadow-blue-500/10 flex items-center justify-center gap-2"
+        className="w-full btn-primary text-sm font-bold shadow-md shadow-blue-500/10"
       >
-        <Save className="h-5 w-5" />
+        <Save className="h-5 w-5 shrink-0" aria-hidden="true" />
         <span>{saving ? "Guardando Configuración..." : "Guardar Toda la Configuración"}</span>
       </button>
     </form>
